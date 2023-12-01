@@ -96,10 +96,6 @@
     </style>
 </head>
 <body>
-
-    <!--
-     Need to add some styling to my map and figure out if I'm going to change all that jam up there in the script. just wanted to kind of start the quickstart tutorial.
-     -->
     <div>
         <h1 style="color:navy;">Flood Forecast for River Basins based on IMD Rainfall Forecast</h1>
         <h3 style="float:left">Forecast date : 29-Sep-2018</h3><h3 id="header" style="margin-left:10px; float:left;"></h3>
@@ -107,16 +103,6 @@
             <div class="map" id="mapcon"></div>
             <div id="divtool"></div>
         </div>
-        <!--<div class="leaflet-top leaflet-right"><div class="leaflet-panel-layers leaflet-control " aria-haspopup="true"><form class="leaflet-panel-layers-list" style="height: 600px;"><div class="leaflet-panel-layers-base"><div class="leaflet-panel-layers-group collapsible"><i class="leaflet-panel-layers-icon"> + </i><label class="leaflet-panel-layers-grouplabel"><span class="leaflet-panel-layers-title">Road Layers</span></label><div class="leaflet-panel-layers-item"><label class="leaflet-panel-layers-title"><i class="leaflet-panel-layers-icon"><i class="icon icon-drinking_water"></i></i><input type="radio" class="leaflet-panel-layers-selector" name="leaflet-base-layers" id="98" value="98"><span class="">Open Cycle Map</span></label></div><div class="leaflet-panel-layers-item"><label class="leaflet-panel-layers-title"><i class="leaflet-panel-layers-icon"><i class="icon icon-drinking_water"></i></i><input type="radio" class="leaflet-panel-layers-selector" name="leaflet-base-layers" id="99" value="99"><span class="">Transports</span></label></div></div></div><div class="leaflet-panel-layers-separator"></div><div class="leaflet-panel-layers-overlays"><div class="leaflet-panel-layers-item"><label class="leaflet-panel-layers-title"><i class="leaflet-panel-layers-icon"><i class="icon icon-bar"></i></i><input class="leaflet-panel-layers-selector" type="checkbox" value="52" id="52"><span class="">Bar</span></label></div><div class="leaflet-panel-layers-item"><label class="leaflet-panel-layers-title"><i class="leaflet-panel-layers-icon"><i class="icon icon-drinking_water"></i></i><input class="leaflet-panel-layers-selector" type="checkbox" value="60" id="60"><span class="">Drinking Water</span></label></div><div class="leaflet-panel-layers-item"><label class="leaflet-panel-layers-title"><i class="leaflet-panel-layers-icon"><i class="icon icon-fuel"></i></i><input class="leaflet-panel-layers-selector" type="checkbox" value="74" id="74"><span class="">Fuel</span></label></div><div class="leaflet-panel-layers-item"><label class="leaflet-panel-layers-title"><i class="leaflet-panel-layers-icon"><i class="icon icon-parking"></i></i><input class="leaflet-panel-layers-selector" type="checkbox" value="89" id="89"><span class="">Parking</span></label></div></div></form></div></div>-->
-
-        <br />
-        <table style="width:100%;">
-            <tr>
-                <td width="88%">&nbsp;</td>
-                <td><a href="http://inrm.co.in/"><img src="Logo_60.gif" /></a></td>
-            </tr>
-        </table>
-
     </div>
 
     <script type="text/javascript">
@@ -368,7 +354,6 @@
         var cwcurl = 'json/CWC_basin/CAV.json'
         // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
         $.getJSON(cwcurl, function (data) {
-
             //topoob = JSON.parse(basinreq.responseText)
             var objname = Object.keys(data.objects)[0];
             //neighbors = topojson.neighbors(data.objects[objname].geometries);
@@ -707,7 +692,6 @@
         var cwcurl = 'json/CWC_basin/KRI.json'
         // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
         $.getJSON(cwcurl, function (data) {
-
             //topoob = JSON.parse(basinreq.responseText)
             var objname = Object.keys(data.objects)[0];
             //neighbors = topojson.neighbors(data.objects[objname].geometries);
@@ -827,7 +811,6 @@
                 });
             return div.node();
         }
-
 
         //function chart(d) {
         //    var feature = d.feature;
@@ -1010,21 +993,16 @@
 
         ///////////////////////////////////////
         //function style(feat, i) {
-
         //    ////console.log(feat);
         //    ////console.log(feat.indie);
-
         //    ////console.log(neighbors[i]);
-
         //    //var i = feat.indie;
         //    //var coco = co(feat.color = d3.max(neighbors[i], function (n) {
         //    //    //console.log(n);
         //    //    //console.log(geowatershed.features[n].color);
         //    //    return geowatershed.features[n].color;
         //    //}) + 1 | 0);
-
         //    //console.log(feat.properties.value)
-
         //    var coco = co(feat.color = feat.properties.value);
         //    //console.log(coco);
         //    return {
@@ -1063,8 +1041,6 @@
                 try {
                     topoob = JSON.parse(req.responseText)
                     var objname = Object.keys(topoob.objects)[0];
-
-                    //console.log(objname);
 
                     neighbors = topojson.neighbors(topoob.objects[objname].geometries);
                     geowatershed = topojson.feature(topoob, topoob.objects[objname])

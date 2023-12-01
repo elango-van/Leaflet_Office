@@ -10,8 +10,8 @@
     <div id="map" style="width: 960px; height: 500px"></div>
 
     <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
-    <script src="./js/jquery.js?6863520000" type="text/javascript" language="javascript"></script>
-    <script src="./js/topojson.v1.min.js"></script>
+    <script src="./assert/js/jquery.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./assert/js/topojson.v1.min.js"></script>
     <script>
 
         var coolPlaces = new L.LayerGroup();
@@ -24,12 +24,12 @@
         //    .bindPopup('Michael Fowler Centre').addTo(coolPlaces),
         //L.marker([-41.28313, 174.77736])
         //    .bindPopup('Leuven Belgin Beer Cafe').addTo(coolPlaces),
-        //var basinurl = './json/test/cav.json'
+        //var basinurl = './assert/json/test/cav.json'
         //var geojsonLayer = new L.GeoJSON.AJAX(basinurl);
         //geojsonLayer.addTo(coolPlaces);
         //L.geoJson(basinurl).addTo(coolPlaces);
 
-        var wsurl = './json/watershed/cav.json'
+        var wsurl = './assert/json/watershed/cav.json'
         var wsgeojson;
         // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
         $.getJSON(wsurl, function (data) {
@@ -44,7 +44,7 @@
 
         var coolPlaces2 = new L.LayerGroup();
 
-        var basinurl = './json/basin/cav.json'
+        var basinurl = './assert/json/basin/cav.json'
         var basingeojson;
         // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
         $.getJSON(basinurl, function (data) {

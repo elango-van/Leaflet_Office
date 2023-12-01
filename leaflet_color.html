@@ -5,8 +5,8 @@
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="https://d3js.org/d3.v4.js"></script>
     <!--<script src="https://unpkg.com/topojson-client@3"></script>-->
-    <script src="./js/topojson.v1.min.js"></script>
-    <script src="./js/queue.v1.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./assert/js/topojson.v1.min.js" type="text/javascript" language="javascript"></script>
+    <script src="./assert/js/queue.v1.min.js?6863520000" type="text/javascript" language="javascript"></script>
 
     <style>
         .map {
@@ -243,7 +243,7 @@
                         geowatershed = topojson.feature(topoob, topoob.objects[objname])
 
                         queue()
-                            .defer(d3.csv, "./data/test/CAV_IMD-GFS_SUB_03072018120000.csv")
+                            .defer(d3.csv, "./assert/data/test/CAV_IMD-GFS_SUB_03072018120000.csv")
                             .await(function (err, data) {
                                 geowatershed.features = geowatershed.features.map(function (fm, i) {
 

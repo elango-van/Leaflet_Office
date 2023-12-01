@@ -10,14 +10,14 @@
     </div>
     
     <script>
-        //var newNode = document.createElement("span");
-        //var parentDiv = document.getElementById("childElement").parentNode;
-        //var sp2 = document.getElementById("childElement");
-        //parentDiv.insertBefore(newNode, sp2);
-        //var sp2 = undefined; // Not exist a node of id "childElement"
-        //parentDiv.insertBefore(newNode, sp2); // Implicit dynamic cast to type Node
-        //var sp2 = "undefined"; // Not exist a node of id "childElement"
-        //parentDiv.insertBefore(newNode, sp2); // Generate "Type Error: Invalid Argument"
+        var newNode = document.createElement("span");
+        var parentDiv = document.getElementById("childElement").parentNode;
+        var sp2 = document.getElementById("childElement");
+        parentDiv.insertBefore(newNode, sp2);
+        // var sp2 = undefined; // Not exist a node of id "childElement"
+        // parentDiv.insertBefore(newNode, sp2); // Implicit dynamic cast to type Node
+        // var sp2 = "undefined"; // Not exist a node of id "childElement"
+        // parentDiv.insertBefore(newNode, sp2); // Generate "Type Error: Invalid Argument"
     </script>
 
     <script>
