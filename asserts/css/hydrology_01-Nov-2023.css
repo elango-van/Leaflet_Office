@@ -1,0 +1,466 @@
+﻿
+/*@@@@@@@@@@@@@@@@@ info and legend @@@@@@@@@@@@@@@@@@@@@@*/
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100vw;
+    overflow: hidden;
+    font: 12px Arial, Helvetica, sans-serif;
+}
+
+.map {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.info {
+    padding: 6px;
+    font: 12px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+
+    .info h4 {
+        margin: 0 0 5px;
+        color: #777;
+        font: 12px Arial, Helvetica, sans-serif;
+    }
+
+/* Legend */
+.legend {
+    line-height: 18px;
+    color: #555;
+    font-size: smaller;
+}
+
+    .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin-right: 8px;
+        opacity: 0.7;
+    }
+
+.tbtoolTip {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: absolute;
+    display: none;
+    width: 150px;
+    height: auto;
+    background: none repeat scroll 0 0 #FFFF99;
+    border: 0 none;
+    border-radius: 8px 8px 8px 8px;
+    color: black;
+    font: 12px sans-serif;
+    padding: 5px;
+    text-align: center;
+    z-index: 900;
+}
+
+.line {
+    fill: none;
+}
+
+.leaflet-popup-content-wrapper, .leaflet-popup-content {
+    width: 400px;
+    padding: unset;
+    margin: 5px;
+}
+
+a {
+    color: brown;
+    text-decoration: none;
+}
+
+#imdmodel {
+    margin: 2px 0px;
+    font-weight: bolder;
+}
+
+.lblmdl {
+    margin-top: -15px;
+    position: relative;
+}
+/*@@@@@@@@@@@@@@@@@ Dropdown selection @@@@@@@@@@@@@@@@@@@@@@*/
+#header {
+    background: #F9BA32;
+    background: -moz-linear-gradient(-45deg, #F9BA32 0%, #A1D6E2 50%, #1995AD 100%);
+    background: -webkit-linear-gradient(-45deg, #F9BA32 0%, #A1D6E2 50%, #1995AD 100%);
+    background: linear-gradient(135deg, #F9BA32 0%, #A1D6E2 50%, #1995AD 100%);
+    
+    padding: calc(0.3vh + 0.2em);
+    /* padding: 5px; */
+    /* display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+     */
+    width: 100%;
+    height: 8vh;
+}
+
+    #header h1 {
+        display: inline;
+        position: absolute;
+        font-size: 1.8VW;
+        color: #002c54;
+        font-weight: normal;
+        vertical-align: middle;
+        padding: 0px;
+        margin: 0px;
+        transform: translateY(50%);
+    }
+
+
+.btn {
+    border: none;
+    padding: 1px 0px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    background-color: lightgray;
+    border-color: #868e96;
+}
+
+.dropdown-menu {
+    position: relative;
+    width: 100%;
+    display: none;
+    min-width: 10rem;
+    padding: .5rem 5px;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    box-shadow: 5px 5px 15px rgba(0,0,0,.15);
+    background-color: #f0f0f0;
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: .25rem;
+    z-index: 1000;
+}
+
+.dropdown-item {
+    display: block;
+    padding: .25rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background: 0 0;
+    border: 0;
+}
+
+    .dropdown-item.active, .dropdown-item:active {
+        color: #fff;
+        text-decoration: none;
+        background-color: #007bff;
+    }
+
+    .dropdown-item.hover, .dropdown-item:hover {
+        color: #fff;
+        text-decoration: none;
+        background-color: #007bff;
+    }
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/*@@@@@@@@@@@@@@@@@ Alert Message @@@@@@@@@@@@@@@@@@@@@@*/
+
+.alert {
+    display: none;
+    position: fixed;
+    /* right: 10px;
+    bottom: 10px; */
+    height: 100px;
+    min-width: 20%;
+    padding: 10px;
+    background-color: lightyellow;
+    margin: auto;
+    z-index: 1100;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 10px;
+    border: 1px groove darkgoldenrod;
+    
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#divmsg {
+    position: relative;
+    max-height: 70px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 16px;
+    font-weight: 200;
+    padding: 0px 10px;
+    /* width: auto; */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    overflow-y: auto;
+}
+
+.closebtn {
+    color: red;
+    font-size: 15pt;
+    font-weight: bolder;
+    cursor: pointer;
+    transition: 0.3s;
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    /* border: 1px ridge darkred;
+    border-radius: 10px; */
+    width: 22px;
+}
+
+/*@@@@@@@@@@@@@@@@@ days radio button @@@@@@@@@@@@@@@@@@@@@@*/
+.divday {
+    margin: unset;
+    margin-top: -25px;
+}
+
+    .divday div {
+        margin-bottom: 5px;
+        width: 60px;
+    }
+/*@media screen and (max-height: 400px) {
+    .divday div {
+        float:left;
+        margin: unset;
+        width: auto;
+    }
+}*/
+
+.leaflet-bottom .leaflet-right .leaflet-control input[type=checkbox] {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.label {
+    font-size: 20px;
+    color: #ffffff;
+    text-shadow: 0 0 5px #FFF, 0 0 10px #FFF, 0 0 15px #FFF, 0 0 20px #57FFF3, 0 0 30px #57FFF3, 0 0 40px #57FFF3, 0 0 55px #57FFF3, 0 0 75px #57FFF3;
+    letter-spacing: 5px;
+    width: auto;
+}
+
+.basintooltip {
+    background-color: yellow;
+}
+
+.grid line {
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+
+.grid path {
+    stroke-width: 0;
+}
+
+.ffdate {
+    -webkit-box-shadow: 5px 5px 15px 1px #2f3131;
+    box-shadow: 5px 5px 15px 1px #2f3131;
+    color: #2f3131;
+    font-weight: bold;
+}
+
+    .ffdate h4 {
+        font-weight: bold;
+    }
+
+/*another-popop style*/
+.another-popup .leaflet-popup-content-wrapper {
+    line-height: 24px;
+    border-radius: 10px;
+    max-width: 120px;
+    padding: 2px;
+}
+
+.another-popup .leaflet-popup-tip {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/*@@@@@@@@@@@@@@ Tab Control @@@@@@@@@@@@@@@@@@@@*/
+.tabs {
+    position: relative;
+    min-height: 280px;
+    clear: both;
+    margin: 25px 0;
+    width:400px;
+}
+
+.tab {
+    float: left;
+    display: none;
+    width: 380px;
+}
+
+    .tab:first-of-type {
+        display: inline-block;
+    }
+
+.tabs-link {
+    position: relative;
+    top: -14px;
+    height: 20px;
+    left: -40px;
+}
+
+.tabs #lableheader {
+    color:maroon;
+    float: right;
+    top: 0px;
+    height: 20px;
+    display: inline-block;
+    padding: 5px;
+    position: relative;
+    list-style-type: none;
+    margin-right: 10px;
+}
+#imdheader {
+	color: maroon;
+	float: right;
+	bottom: -30px;
+	right:0px;
+	height: 20px;
+	display: inline-block;
+	padding: 5px;
+	position: absolute;
+	list-style-type: none;
+	margin-right: 42px;
+}
+.tab-link {
+    background: #eee;
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-left: -1px;
+    position: relative;
+    list-style-type: none;
+    left: 1px;
+    top: 1px;
+    cursor: pointer;
+}
+
+.tab-link {
+    background: #f8f8f8;
+}
+
+.content {
+    background: white;
+    position: absolute;
+    top: 30px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 380px;
+    overflow-y: auto;
+}
+
+.tab:target {
+    display: block;
+}
+
+.leaflet-popup{
+    background-color:white;
+}
+
+.content table {
+    width: 100%;
+    border: 0px;
+    border-collapse: collapse;
+    border-spacing: 0px;
+}
+
+.content th {
+    border-bottom: 2px double #ccc;
+    font-size: 12px;
+    color: maroon;
+    text-align: left;
+    padding: 5px 0;
+}
+.content td {
+    border-bottom: 1px groove grey;
+    font-size: 12px;
+    font-style: normal;
+    padding: 5px;
+}
+
+/*@@@@@@@@@@@@@@@@ Vertical Menu @@@@@@@@@@@@@*/
+.vertical-menu {
+    width: 100%;
+}
+
+    .vertical-menu a {
+        background-color: #eee;
+        color: black;
+        display: block;
+        padding: 12px;
+        text-decoration: none;
+    }
+
+        .vertical-menu a:hover {
+            background-color: #ccc;
+        }
+
+        .vertical-menu a.active {
+            background-color: #0078A8;
+            color: white;
+        }
+/*@@@@@@@@@@@@@@@@ IMG home page @@@@@@@@@@@@@*/
+#leftwrap img {
+    width: 30px;
+    height: 30px;
+    margin-left: 20px;
+}
+
+/*@@@@@@@@@@@@ show help file @@@@@@@@@@@@@@@@*/
+.pdfshow {
+	z-index: 2999;
+	display: none;
+}
+
+	.pdfshow .pdf-show {
+		width: 50%;
+		height: 80%;
+		*background: #000;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%,-50%);
+		overflow: hidden;
+		border: 1px solid #888888;
+		z-index: 2999;
+	}
+
+.pdf-show button {
+	position: absolute;
+	top: 2px;
+	right: 16px;
+	z-index: 2999;
+	cursor: pointer;
+	font-family: Arial;
+	font-size: medium;
+	color: red;
+	border-radius: 50%;
+}
+
+.pdf-show iframe {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+}

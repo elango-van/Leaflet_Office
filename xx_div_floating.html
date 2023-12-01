@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <style>
+        .width {
+            width: 960px;
+            margin: 0 auto;
+            border: 1px solid #000;
+            overflow: auto;
+        }
+
+        .left {
+            float: left;
+        }
+
+        .right {
+            float: right;
+        }
+
+        #container {
+            position: relative;
+            height: 500px;
+            width: 89.5%;
+            background: #ccc;
+        }
+
+        #copyright {
+            position: absolute;
+            top: 10;
+        }
+    </style>
+    <link href="https://s0.wp.com/_static/??-eJx9i0EKQjEMBS9kDdVfXIlnyS+1jaRJafLx+uJCRBRXbx7MwH2ErOJFHPoWBm+VxACzk8qK8037bLaD3/pQ83BlpAnWcJLU1/6rTDMhB9aqn+cr8lZ6MWgLVNYV+Slc+jmmQzrFtMTj7QHFQEmu?cssminify=yes" rel="stylesheet" />
+
+    <script src="js/d3.v4.min.js"></script>
+</head>
+<body>
+    <div style="overflow:hidden; height:50%;width:50%;border: 1px solid #000;">
+        <div style="float:left;border: 1px solid #000; width:5%;">&nbsp;</div>
+        <div id="container" style="float:left;">
+            <!-- Other elements here -->
+            <div id="copyright">
+                <div>
+                    Copyright Foo web designs
+                </div>
+                <div>
+                    Copyright Foo web designs
+                </div>
+                <div>
+                    Copyright Foo web designs
+                </div>
+            </div>
+        </div>
+        <div style="float:left;border: 1px solid #000;width:5%;">&nbsp;</div>
+    </div>
+    <br />
+    <br />
+    <style>
+        div#actionbar {
+            background: #fff;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            border: solid 1px #c8d7e1;
+            border-radius: 3px;
+            opacity: .98;
+            height: 35px;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            line-height: 1;
+            z-index: 50000;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen-Sans","Ubuntu","Cantarell","Helvetica Neue",sans-serif;
+            -webkit-transform: translate3d(0,0,0);
+            -moz-transform: translate3d(0,0,0);
+            -o-transform: translate3d(0,0,0);
+            -ms-transform: translate3d(0,0,0);
+            transform: translate3d(0,0,0);
+            transition: all .2s ease-in-out;
+            -webkit-backface-visibility: hidden;
+            -webkit-perspective: 1000;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+            div#actionbar .actnbr-notice .tip-inner {
+                padding: 0;
+            }
+
+            div#actionbar .actnbr-popover .tip-inner {
+                background-color: #fff;
+                border: 1px solid #c8d7e1;
+                border-radius: 4px;
+                box-shadow: 0 2px 5px rgba(0,0,0,.1), 0 0 56px rgba(0,0,0,.075);
+                text-align: center;
+            }
+
+            div#actionbar * {
+                box-sizing: border-box;
+                outline: none;
+                -webkit-tap-highlight-color: rgba(0,0,0,0);
+                user-select: none;
+                -webkit-user-select: none;
+            }
+    </style>
+    
+    <div class="actnbr-popover tip tip-top-left actnbr-notice">
+        <div class="tip-arrow"></div>
+        <div class="tip-inner actnbr-follow-bubble">
+            <ul>
+                <li class="actnbr-sitename"><a href="http://varunvns.wordpress.com"><img alt="" src="https://s2.wp.com/i/logo/wpcom-gray-white.png" class="avatar avatar-50" height="50" width="50"> Sitecore Endeavor</a></li>
+                <li>
+                    <form method="post" action="https://subscribe.wordpress.com" accept-charset="utf-8">
+                        <div class="actnbr-follow-count">Join 877 other followers</div>
+                        <div>
+                            <input type="email" name="email" placeholder="Enter your email address" class="actnbr-email-field">
+                        </div>
+                        <input type="hidden" name="action" value="subscribe"><input type="hidden" name="blog_id" value="22644853">
+                        <input type="hidden" name="source" value="https://varunvns.wordpress.com/2012/05/05/reading-and-writing-in-text-files-with-multiple-programs-accessing-it-simultaneously/">
+                        <input type="hidden" name="sub-type" value="actionbar-follow"><input type="hidden" id="_wpnonce" name="_wpnonce" value="aeac5f123b">
+                        <div class="actnbr-button-wrap">
+                            <button type="submit" value="Sign me up">Sign me up</button>
+                        </div>
+                    </form>
+                </li>
+                <li class="actnbr-login-nudge"><div>Already have a WordPress.com account? <a href="https://varunvns.wordpress.com/wp-login.php?redirect_to=https%3A%2F%2Fvarunvns.wordpress.com%2F2012%2F05%2F05%2Freading-and-writing-in-text-files-with-multiple-programs-accessing-it-simultaneously%2F">Log in now.</a></div></li>
+            </ul>
+        </div>
+    </div>
+    <div id="actionbar" class="actnbr-pub-harmonic actnbr-has-follow">
+        <ul>
+            <li class="actnbr-btn actnbr-hidden">
+                <a class="actnbr-action actnbr-actn-follow" href=""><svg class="gridicon gridicon__follow" height="24px" width="24px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><path d="M23 16v2h-3v3h-2v-3h-3v-2h3v-3h2v3h3zM20 2v9h-4v3h-3v4H4c-1.1 0-2-.9-2-2V2h18zM8 13v-1H4v1h4zm3-3H4v1h7v-1zm0-2H4v1h7V8zm7-4H4v2h14V4z"></path></g></svg><span>Follow</span></a>
+                <div class="actnbr-popover tip tip-top-left actnbr-notice">
+                    <div class="tip-arrow"></div>
+                    <div class="tip-inner actnbr-follow-bubble"><ul><li class="actnbr-sitename"><a href="http://varunvns.wordpress.com"><img alt="" src="https://s2.wp.com/i/logo/wpcom-gray-white.png" class="avatar avatar-50" height="50" width="50"> Sitecore Endeavor</a></li><li><form method="post" action="https://subscribe.wordpress.com" accept-charset="utf-8"><div class="actnbr-follow-count">Join 877 other followers</div><div><input type="email" name="email" placeholder="Enter your email address" class="actnbr-email-field"></div><input type="hidden" name="action" value="subscribe"><input type="hidden" name="blog_id" value="22644853"><input type="hidden" name="source" value="https://varunvns.wordpress.com/2012/05/05/reading-and-writing-in-text-files-with-multiple-programs-accessing-it-simultaneously/"><input type="hidden" name="sub-type" value="actionbar-follow"><input type="hidden" id="_wpnonce" name="_wpnonce" value="aeac5f123b"><div class="actnbr-button-wrap"><button type="submit" value="Sign me up">Sign me up</button></div></form></li><li class="actnbr-login-nudge"><div>Already have a WordPress.com account? <a href="https://varunvns.wordpress.com/wp-login.php?redirect_to=https%3A%2F%2Fvarunvns.wordpress.com%2F2012%2F05%2F05%2Freading-and-writing-in-text-files-with-multiple-programs-accessing-it-simultaneously%2F">Log in now.</a></div></li></ul></div>
+                </div>
+            </li>
+            <li class="actnbr-ellipsis actnbr-hidden">
+                <svg class="gridicon gridicon__ellipsis" height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><circle cx="5" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle></g></svg>
+                <div class="actnbr-popover tip tip-top-left actnbr-more">
+                    <div class="tip-arrow"></div>
+                    <div class="tip-inner">
+                        <ul>
+                            <li class="actnbr-sitename actnbr-hidden"><a href="http://varunvns.wordpress.com"><img alt="" src="https://s2.wp.com/i/logo/wpcom-gray-white.png" class="avatar avatar-50" height="50" width="50"> Sitecore Endeavor</a></li>
+                            <li class="actnbr-folded-customize actnbr-hidden"><a href="https://varunvns.wordpress.com/wp-admin/customize.php?url=https%3A%2F%2Fvarunvns.wordpress.com%2F2012%2F05%2F05%2Freading-and-writing-in-text-files-with-multiple-programs-accessing-it-simultaneously%2F"><svg class="gridicon gridicon__customize" height="20px" width="20px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><path d="M2 6c0-1.505.78-3.08 2-4 0 .845.69 2 2 2 1.657 0 3 1.343 3 3 0 .386-.08.752-.212 1.09.74.594 1.476 1.19 2.19 1.81L8.9 11.98c-.62-.716-1.214-1.454-1.807-2.192C6.753 9.92 6.387 10 6 10c-2.21 0-4-1.79-4-4zm12.152 6.848l1.34-1.34c.607.304 1.283.492 2.008.492 2.485 0 4.5-2.015 4.5-4.5 0-.725-.188-1.4-.493-2.007L18 9l-2-2 3.507-3.507C18.9 3.188 18.225 3 17.5 3 15.015 3 13 5.015 13 7.5c0 .725.188 1.4.493 2.007L3 20l2 2 6.848-6.848c1.885 1.928 3.874 3.753 5.977 5.45l1.425 1.148 1.5-1.5-1.15-1.425c-1.695-2.103-3.52-4.092-5.448-5.977z" data-reactid=".2.1.1:0.1b.0"></path></g></svg><span>Customize<span></span></span></a></li>
+                            <li class="actnbr-folded-follow actnbr-hidden"><a class="actnbr-action actnbr-actn-follow" href=""><svg class="gridicon gridicon__follow" height="24px" width="24px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><path d="M23 16v2h-3v3h-2v-3h-3v-2h3v-3h2v3h3zM20 2v9h-4v3h-3v4H4c-1.1 0-2-.9-2-2V2h18zM8 13v-1H4v1h4zm3-3H4v1h7v-1zm0-2H4v1h7V8zm7-4H4v2h14V4z"></path></g></svg><span>Follow</span></a></li>
+                            <li class="actnbr-signup actnbr-hidden"><a href="https://wordpress.com/start/">Sign up</a></li>
+                            <li class="actnbr-login actnbr-hidden"><a href="https://varunvns.wordpress.com/wp-login.php?redirect_to=https%3A%2F%2Fvarunvns.wordpress.com%2F2012%2F05%2F05%2Freading-and-writing-in-text-files-with-multiple-programs-accessing-it-simultaneously%2F">Log in</a></li>
+
+                            <li class="actnbr-shortlink actnbr-hidden"><a href="https://wp.me/p1x0Xz-B">Copy shortlink</a></li>
+                            <li class="flb-report actnbr-hidden"><a href="http://en.wordpress.com/abuse/">Report this content</a></li>
+
+
+                            <li class="actnbr-subs actnbr-hidden"><a href="https://subscribe.wordpress.com/">Manage subscriptions</a></li>
+                            <li class="actnbr-fold actnbr-hidden"><a href="">Collapse this bar</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <footer>
+        <div class="width">
+            <div class="left">
+                Lest Side
+            </div>
+            <div class="right">
+                Right Side
+            </div>
+        </div>
+    </footer>
+
+    <script>
+		var textcsv = 'Year,Make,Model,Length\n1997,Ford,E350,2.34\n2000,Mercury,Cougar,2.38';
+		console.log(textcsv);
+		var parsed = d3.csvParse(textcsv);
+		console.log(parsed);
+
+		//d3.csv.parse(textcsv)
+
+    </script>
+</body>
+</html>

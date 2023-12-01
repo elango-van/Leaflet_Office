@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="./js/jquery.js?6863520000" type="text/javascript" language="javascript"></script>
+    <style>
+        .popup{
+            width: 900px;
+            margin: auto;
+            text-align: center
+        }
+        .popup img{
+            width: 200px;
+            height: 200px;
+            cursor: pointer
+        }
+        .show{
+            z-index: 999;
+            display: none;
+        }
+        .show .overlay{
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,.66);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .show .img-show{
+            width: 600px;
+            height: 450px;
+            *background: #000;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            overflow: hidden;
+            *box-shadow: 2px 8px 16px 2px rgba(0, 0, 0, 0.5), 0 12px 40px 0 rgba(0, 0, 0, 0.19);
+            border:1px solid #888888;
+            box-shadow: 5px 10px #888888;
+
+        }
+        .img-show span{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 99;
+            cursor: pointer;
+            font-family:Arial;
+            font-size:medium;
+            color:red;
+        }
+        .img-show img{
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        /*End style*/
+
+    </style>
+</head>
+<body>
+    <div class="popup">
+        <img src="images/SWAT_Input.jpg">
+    </div>
+    <div class="show">
+        <!--<div class="overlay"></div>-->
+        <div class="img-show">
+            <span>x</span>
+            <img src="">
+        </div>
+    </div>
+    <!--End image popup-->
+    <script>
+        $(function () {
+            "use strict";
+
+            $(".popup img").click(function () {
+                var $src = $(this).attr("src");
+                $(".show").fadeIn();
+                $(".img-show img").attr("src", $src);
+            });
+
+            $("span, .overlay").click(function () {
+                $(".show").fadeOut();
+            });
+
+        });
+    </script>
+</body>
+</html>
+
+
+<!--<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+</head>
+<body>
+
+    <div data-role="page">
+        <div data-role="header">
+            <h1>Welcome To My Homepage</h1>
+        </div>
+
+        <div id="pageone" data-role="main" class="ui-content">
+            <p>Click on the image to enlarge it.</p>
+            <p>Notice that we have added a "back button" in the top right corner.</p>
+            <a href="#myPopup" data-rel="popup" data-position-to="window">
+                <img src="images/SWAT_Input.jpg" alt="Skaret View" style="width:75px; height:65px;">
+            </a>
+
+            <div data-role="popup" id="myPopup">
+                <a href="#pageone" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+                <img src="images/SWAT_Input.jpg" style="width:600px; height:450px;" alt="Skaret View">
+            </div>
+        </div>
+
+        <div data-role="footer">
+            <h1>Footer Text</h1>
+        </div>
+    </div>
+
+</body>
+</html>-->

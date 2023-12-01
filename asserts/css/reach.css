@@ -1,0 +1,64 @@
+﻿
+.stroke {
+    fill: none;
+    *stroke: #ccc;
+    stroke-width: 1px;
+}
+
+/*.fill {
+            fill: #fff;
+        }*/
+
+.loc {
+    stroke-width: 25px;
+    width: 25px;
+    height: 25px;
+}
+
+.rchbasin {
+    *stroke: cadetblue;
+    fill: none;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.stroke1 {
+    stroke-width: 0.05px;
+    stroke: #eff3ff;
+}
+
+.stroke2 {
+    stroke-width: 0.1px;
+    stroke: #bdd7e7;
+}
+
+.stroke3 {
+    stroke-width: 0.2px;
+    stroke: #6baed6;
+}
+
+.stroke4 {
+    stroke-width: 0.4px;
+    stroke: #3182bd;
+}
+
+.stroke5 {
+    stroke-width: 0.6px;
+    stroke: #08519c;
+}
+
+.stroke6 {
+    stroke-width: 1px;
+    stroke: #3182bd;
+}
+
+.stroke7 {
+    stroke-width: 1.2px;
+    stroke: #08519c;
+}
+
+text.halo {
+    opacity: 0.7;
+    stroke: #fff;
+    stroke-width: 5px;
+}

@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="css/leaflet.1.4.0.css" rel="stylesheet" />
+    <script src="js/leaflet.1.4.0.js"></script>
+    <style>
+        #map {
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        var map = L.map("map");
+        L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png").addTo(map);
+
+        map.setView([48.85, 2.35], 12);
+
+        //L.circle([48.85, 2.35], {radius: 1000}).bindTooltip("test").addTo(map);
+        L.rectangle([[48.84, 2.34], [48.86, 2.36]]).bindTooltip("test", {
+            sticky: true
+        }).addTo(map);
+    </script>
+</body>
+</html>

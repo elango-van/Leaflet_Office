@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <div id="parentElement">
+        <span id="childElement">foo bar</span>
+    </div>
+    
+    <script>
+        //var newNode = document.createElement("span");
+        //var parentDiv = document.getElementById("childElement").parentNode;
+        //var sp2 = document.getElementById("childElement");
+        //parentDiv.insertBefore(newNode, sp2);
+        //var sp2 = undefined; // Not exist a node of id "childElement"
+        //parentDiv.insertBefore(newNode, sp2); // Implicit dynamic cast to type Node
+        //var sp2 = "undefined"; // Not exist a node of id "childElement"
+        //parentDiv.insertBefore(newNode, sp2); // Generate "Type Error: Invalid Argument"
+    </script>
+
+    <script>
+        //var sp1 = document.createElement("span");
+        //var sp2 = document.getElementById("childElement");
+        //var parentDiv = sp2.parentNode;
+        //parentDiv.insertBefore(sp1, sp2);
+
+
+        var parentElement = document.getElementById('parentElement');
+        // Get a reference to the first child
+        var theFirstChild = parentElement.firstChild;
+
+        // Create a new element
+        var newElement = document.createElement("div");
+
+        // Insert the new element before the first child
+        parentElement.insertBefore(newElement, theFirstChild);
+    </script>
+
+</body>
+</html>

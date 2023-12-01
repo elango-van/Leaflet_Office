@@ -1,0 +1,706 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link href="./favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!--<meta http-equiv='cache-control' content='no-cache' />
+    <meta http-equiv='expires' content='-1' />
+    <meta http-equiv='pragma' content='no-cache' />-->
+
+    <title>Flood Forecast for River Basins based on IMD Rainfall Forecast</title>
+
+    <script src="./js/jquery.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/d3.v4.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/d3-legend.v4.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/queue.v1.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/topojson.v1.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/colorbrewer.v1.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <!--<script src="./js/disablepage.js?6863520000"></script>-->
+
+    <link href="./css/screen.css" type="text/css" rel="stylesheet" rev="stylesheet" />
+    <link href="./css/screenUpdate.css" type="text/css" rel="stylesheet" rev="stylesheet" />
+    <link href="./css/reach.css" type="text/css" rel="stylesheet" rev="stylesheet" />
+
+    <style type="text/css">
+        .tab .nav-tabs {
+            border-bottom: 0 none;
+            width: 470px;
+        }
+
+            .tab .nav-tabs li a {
+                position: relative;
+                padding: 6px;
+                margin: 0px;
+                color: #804000;
+                font-size: 12px;
+                z-index: 1;
+            }
+
+                .tab .nav-tabs li a:hover {
+                    background: transparent;
+                    border: 1px solid transparent;
+                }
+
+                .tab .nav-tabs li a:before {
+                    content: "";
+                    width: 125%;
+                    height: 100%;
+                    position: absolute;
+                    *bottom: 2px;
+                    left: -2px;
+                    top: 2px;
+                    background: #D2B48C;
+                    border: 2px solid #d3d3d3;
+                    border-bottom: 0px none;
+                    border-bottom-left-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                    border-top-right-radius: 25px;
+                    border-top-left-radius: 5px;
+                    transform-origin: left center 0;
+                    z-index: -30;
+                }
+
+            .tab .nav-tabs li {
+                margin-right: 15px;
+                width: 80px;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+                .tab .nav-tabs li.active a:before {
+                    background: #804000;
+                }
+
+                .tab .nav-tabs li.active a,
+                .tab .nav-tabs li.active a:focus,
+                .tab .nav-tabs li.active a:hover {
+                    border: 1px solid transparent;
+                    background: transparent;
+                    color: #fff;
+                    font-weight: 300;
+                    z-index: 2;
+                }
+
+        .tab-content .tab-pane {
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border: 1px solid #af9a58;
+            padding: 1px;
+            background: #efeadd;
+            *line-height: 12px;
+            width: 470px;
+        }
+
+            .tab-content .tab-pane h4 {
+                margin-top: 0;
+                font-weight: 700;
+                font-size: 20px;
+            }
+
+        @media only screen and (max-width: 767px) {
+            .tab .nav-tabs li a {
+                padding: 15px 10px;
+                font-size: 14px;
+            }
+
+                .tab .nav-tabs li a:before {
+                    bottom: 6px;
+                }
+        }
+
+        @media only screen and (max-width: 499px) {
+            .tab .nav-tabs li {
+                width: 100%;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+
+                .tab .nav-tabs li a:before {
+                    bottom: 0;
+                    transform: none;
+                    border-bottom: 1px solid #408080;
+                }
+        }
+    </style>
+
+    <style type="text/css">
+        .allbasin {
+            fill: #d5f5e3;
+            stroke: gray;
+            stroke-width: 0.2px;
+        }
+
+        .cwcbasin {
+            *fill: transparent;
+            stroke: black;
+            stroke-width: 0.2px;
+            fill: #eee;
+        }
+
+        .wsbasin {
+            *fill: transparent;
+            stroke: black;
+            stroke-width: 0.04px;
+            fill: #eee;
+        }
+
+        /*.x.axis path {
+            display: none;
+        }*/
+
+        /* this th and td for tooltip */
+        th {
+            border-bottom: 2px solid #ddd;
+            padding-left: 8px;
+            font-size: 8pt;
+            font-weight: bold;
+        }
+
+        td {
+            padding-left: 8px;
+            font-size: 8pt;
+            border-top: 1px solid #ddd;
+        }
+
+        .label {
+            font-size: 8px;
+        }
+        /*#divtool{
+            position:relative;
+            *z-index:10000;
+            border: 5px solid red;
+
+        }*/
+        .bsntooltip {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            position: absolute;
+            display: none;
+            width: auto;
+            height: auto;
+            background: none repeat scroll 0 0 #FFFF99;
+            border: 0 none;
+            border-radius: 8px 8px 8px 8px;
+            *box-shadow: -3px 3px 15px #888888;
+            color: black;
+            font: 12px sans-serif;
+            padding: 5px;
+            text-align: center;
+            vertical-align: middle;
+            z-index: 100;
+        }
+
+        .noBorder {
+            border: none !important;
+        }
+
+        #divbasinmap {
+            width: 450px;
+            height: 457px;
+            background-color: #efeadd;
+            border: 1px solid #af9a58;
+            margin: 5px;
+            *transform: translate(100px, 100px);
+            *-webkit-transform: translate(100px, 100px);
+        }
+
+        #divuppermsg, #divlowermsg {
+            margin-left: -8px;
+            *margin-top: -25px;
+            background-color: #efeadd;
+            border: 1px solid #af9a58;
+            width: 470px;
+            height: 110px;
+            vertical-align: middle;
+            border-radius: 15px;
+            *border-bottom-right-radius: 15px;
+        }
+
+        #divuppermsg {
+            padding: 10px;
+            line-height: 18px;
+            width: 450px;
+        }
+
+        #divlowermsg {
+            height: 322px;
+        }
+
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
+        }
+
+        .axisSteelBlue text {
+            fill: steelblue;
+        }
+
+        .axisRed text {
+            fill: red;
+        }
+
+        .grid line {
+            stroke: lightgrey;
+            stroke-opacity: 0.7;
+            shape-rendering: crispEdges;
+        }
+
+        .grid path {
+            stroke-width: 0;
+        }
+
+        #lbltitle {
+            left: 30px;
+            top: -9px;
+            *margin-left: 20px;
+            position: absolute;
+            background-color: white;
+            *border: 1px solid #af9a58;
+            font-size: 12px;
+            border-radius: 5px;
+            *padding: 1px 0 1px 0; /* top left bottom right*/
+        }
+
+        /*fieldset {
+            margin-left: -8px;
+            margin-top: -20px;
+            padding: 0em;
+            border: 1px solid #af9a58;
+            min-width: unset;
+        }
+
+            fieldset legend {
+                font-size: 10pt;
+                font-weight: bold;
+                margin-left: 38px;
+                *margin-top: 15px;
+                width: 125px;
+            }*/
+    </style>
+    <style type="text/css">
+        .progress-meter .background {
+            fill: #ccc;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) inset;
+        }
+
+        .progress-meter .foreground {
+            fill: #9dcfff;
+        }
+
+        .progress-meter text {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+
+    <style>
+        .popup {
+            width: 900px;
+            margin: auto;
+            text-align: center;
+        }
+
+            .popup img {
+                width: 200px;
+                height: 200px;
+                cursor: pointer;
+            }
+
+        .show {
+            z-index: 999;
+            display: none;
+        }
+
+
+            .show .overlay {
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,.66);
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+
+        .pdfshow {
+            z-index: 999;
+            display: none;
+        }
+
+            .pdfshow .overlay {
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,.66);
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+
+        .show .img-show {
+            width: 550px;
+            height: 400px;
+            *background: #000;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            overflow: hidden;
+            *box-shadow: 2px 8px 16px 2px rgba(0, 0, 0, 0.5), 0 12px 40px 0 rgba(0, 0, 0, 0.19);
+            border: 1px solid #888888;
+            box-shadow: 5px 10px #888888;
+        }
+
+        .img-show span {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 99;
+            cursor: pointer;
+            font-family: Arial;
+            font-size: medium;
+            color: red;
+        }
+
+        .img-show img {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .pdfshow .pdf-show {
+            width: 550px;
+            height: 400px;
+            *background: #000;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            overflow: hidden;
+            *box-shadow: 2px 8px 16px 2px rgba(0, 0, 0, 0.5), 0 12px 40px 0 rgba(0, 0, 0, 0.19);
+            border: 1px solid #888888;
+            *box-shadow: 5px 10px #888888;
+        }
+
+        .pdf-show button {
+            position: absolute;
+            top: 2px;
+            right: 16px;
+            z-index: 99;
+            cursor: pointer;
+            font-family: Arial;
+            font-size: medium;
+            color: red;
+        }
+
+        .pdf-show iframe {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        /*End style*/
+    </style>
+</head>
+<body id="home">
+    <div id="wrapper">
+        <div id="header">
+            <div id="logo">
+                <div>
+                    &nbsp;
+                </div>
+                <span class="mainHeader">
+                    Flood Forecast for River Basins based on IMD Rainfall Forecast
+                </span>
+                <span id="tagline">
+                    &nbsp;
+                </span>
+            </div>
+            <div style="float: right; padding-right: 10px;">
+                <div>
+                    &nbsp;
+                </div>
+                <a href="" target="_blank">
+                    <img src="./Logo_60.gif" alt="Inrm Consultants Pvt Ltd" border="0" width="26" height="26" style="padding-left: 5px; padding-top: 3px;" />
+                </a>
+            </div>
+            <div class="clr">
+            </div>
+        </div>
+        <div id="nav-container">
+            <script>
+                function gotopage(obj) {
+                    if (basincode !== null && typeof (basincode) !== 'undefined' && obj !== 'index.html') {
+                        window.location.href = obj + '?code=' + basincode + '&name=' + basinname;
+                    }
+
+                    //if (basincode === null || typeof (basincode) === 'undefined' || obj === 'index.html') {
+                    //    window.location.href = "index.html";
+                    //}
+                    //else {
+                    //    window.location.href = obj + '?code=' + basincode + '&name=' + basinname;
+                    //}
+                }
+            </script>
+            <ul id="nav" style="display: block;">
+                <li class="current">
+                    <a style="color:midnightblue;	display: block;	float: left;	font-family: arial;	font-size: 11.5px;	font-weight: bold;	height: 25px;" href="#" onclick="gotopage('index.html')">Home</a>
+                </li>
+                <li>
+                    <a href="#" onclick="gotopage('imdgfs.html')">GFS Hydrology</a>
+                </li>
+                <li>
+                    <a href="#" onclick="gotopage('imdwrf.html')">WRF Hydrology</a>
+                </li>
+                <li title="Forecast rainfall comparison between GFS and WRF">
+                    <a href="#" onclick="gotopage('rainfall.html')" title="Forecast rainfall comparison between GFS and WRF">GFS/WRF Comparison</a>
+                </li>
+                <!--<li>
+                    <a href="cordexProjections.html">Projections</a>
+                </li>
+                <li>
+                    <a href="cordexClimateExtreme.html">Climate Extreme</a>
+                </li>
+                <li>
+                    <a href="cordexComparisons.html">Comparisons</a>
+                </li>-->
+            </ul>
+        </div>
+
+        <div id="content" style="margin: -20px 0 0 0;">
+            <div style="width: 100%;">
+                <div class="left-content" style="margin: 30px 0 0 0;">
+                    <div class="map-container">
+                        <div id="divbasinmap">
+                        </div>
+                        <div id="bsntooltip" class="bsntooltip"></div>
+                    </div>
+                </div>
+                <div class="right-content" id="right_content">
+                    <div class="map-container">
+                        <div id="divuppermsg">
+                            <label style="text-decoration:underline;"> Home Tab: Click on desired river basin (avoid clicking label)</label><a href="#" class="pdfpopup" style="position:absolute; top:1px;right:1px;font-family:ar[Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif]"><h4>?</h4></a>
+                            <br />
+                            A window opens to 'GFS Hydrology' tab showing
+                            <ul style="margin-top:-1px;">
+                                <li>the river basin with subbasin on the left map panel</li>
+                                <li>CWC - IMD FMO subbasins  on the top right map panel</li>
+                                <li>Chart, table and description on the bottom right panel for subbasin average daily rainfall and stream flow</li>
+                            </ul>
+
+                        </div>
+                    </div>
+                    <!--<div class="clr"></div>-->
+                    <!--<!--<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+                    <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>-->
+                    -->
+
+                    <div class="map-container" style="top:-35px;">
+                        <div id="divlowermsg">
+                            <h4 style="text-align:center;color:#991122; margin-top:5px;margin-bottom:2px;">Stream flow forecast at sub basin level for river basins</h4>
+                            <p style="margin: 0 0 0 10px; font-size:9pt;">
+                                SWAT hydrological model (https://swat.tamu.edu/) is used to simulate the stream flow. Hydrological modelling has been carried out for the entire river basin. Calibrated and validated model is currently run at daily time step to produce stream flow forecast.
+                                <br />
+                                Input data used <a href="#" class="popup">example</a>:
+                            </p>
+                            <div style="margin-top:-5px;">
+                                <ul style="font-size:8pt;">
+                                    <li>Digital Elevation Model: DEM SRTM – 30m resolution</li>
+                                    <li>Landuse (NRSA 2007-08)</li>
+                                    <li>Soil – NBSSLUP/FAO</li>
+                                    <li>Reservoir characteristics and operation rules (Major and medium projects)</li>
+                                    <li>Current management/operation practices, existing irrigation as per crop demand. (Note: Current crop management practices include irrigation sources from Surface and Ground water).</li>
+                                    <li>Weather</li>
+                                    <ul>
+                                        <li>Current day : GPM (IMD)  gridded rainfall, temperature at 25km resolution</li>
+                                        <li>Forecast : IMD WRF (9 km grid) – 3 days forecast and IMD GFS  (12.5 km grid) - 6 days forecast</li>
+                                    </ul>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clr"></div>
+    </div>
+    <style>
+        .loader {
+            width: 250px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            font-family: helvetica, arial, sans-serif;
+            text-transform: uppercase;
+            font-weight: 900;
+            color: #ce4233;
+            letter-spacing: 0.2em;
+            z-index: 1001;
+            *display: none;
+        }
+
+            .loader::before, .loader::after {
+                content: "";
+                display: block;
+                width: 15px;
+                height: 15px;
+                background: #ce4233;
+                position: absolute;
+                -webkit-animation: load .7s infinite alternate ease-in-out;
+                animation: load .7s infinite alternate ease-in-out;
+            }
+
+            .loader::before {
+                top: 0;
+            }
+
+            .loader::after {
+                bottom: 0;
+            }
+
+        @-webkit-keyframes load {
+            0% {
+                left: 0;
+                height: 30px;
+                width: 15px;
+            }
+
+            50% {
+                height: 8px;
+                width: 40px;
+            }
+
+            100% {
+                left: 235px;
+                height: 30px;
+                width: 15px;
+            }
+        }
+
+        @keyframes load {
+            0% {
+                left: 0;
+                height: 30px;
+                width: 15px;
+            }
+
+            50% {
+                height: 8px;
+                width: 40px;
+            }
+
+            100% {
+                left: 235px;
+                height: 30px;
+                width: 15px;
+            }
+        }
+
+        #loaderContainer {
+            background-color: rgba(0, 0, 0, 0.3);
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            left: 0px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+    <div id="loaderContainer" onclick="this.style.display = 'none';">
+        <div class="loader">Loading...</div>
+    </div>
+    <!--<img src="clock.gif" id="imgclock" style="display: none;" alt="Please wait while downloading" />-->
+    <div id="divalert" class="alert">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        <div id="divmsg"><strong>Alert!</strong></div>
+    </div>
+    <div class="prscentered">
+        <div class="prscontainer">
+            Processing wait ...
+        </div>
+    </div>
+    <div id="divpb"></div>
+    <script src="./js/loadindiamap.v4.js?6863520000"></script>
+    <div class="show">
+        <!--<div class="overlay"></div>-->
+        <div class="img-show">
+            <span>x</span>
+            <img src="" />
+        </div>
+    </div>
+
+    <div class="pdfshow">
+        <div class="pdf-show">
+            <button>x</button>
+            <iframe src=""></iframe>
+        </div>
+    </div>
+    <!--<div class="show">
+        <div class="img-show">
+            <span>x</span>
+            <div id="modal"></div>
+        </div>
+    </div>-->
+
+    <script>
+        $(function () {
+            "use strict";
+
+            $(".popup").click(function () {
+                //var $src = $(this).attr("src");
+                $(".show").fadeIn();
+                $(".img-show img").attr("src", "images/SWAT_Input.jpg");
+            });
+
+            $("span, .overlay").click(function () {
+                $(".show").fadeOut();
+                $("#modal").fadeOut();
+            });
+
+            $(".pdfpopup").click(function () {
+                //var $src = $(this).attr("src");
+                $(".pdfshow").fadeIn();
+                $(".pdf-show iframe").attr("src", "json/Help.pdf");
+            });
+            $("button").click(function () {
+                $(".pdfshow").fadeOut();
+            });
+
+            //$('.pdfpopup').click(function (e) {
+            //    e.preventDefault();
+            //    $("#modal").fadeIn();
+            //    $("#modal").append("<iframe src='json/Help.pdf'></iframe>");
+            //});
+
+            //$('.pdfpopup a').click(function (e) {
+            //    e.preventDefault();
+            //    newSrc = $(this).attr("href");
+            //    $('#modalframe').attr('src', './json/Help.pdf');
+            //    $('#modalframe').on('load', function () {
+            //        $("#modal").fadeIn(1000);
+            //        $('#modalframe').off('load');
+            //    });
+            //});
+
+        });
+
+    </script>
+    </div>
+</body>
+</html>

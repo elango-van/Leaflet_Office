@@ -1,0 +1,924 @@
+﻿<html>
+<head>
+
+    <!--
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>-->
+
+
+    <link href="./asserts/css/leaflet.1.4.0.css" rel="stylesheet" />
+    <link href="./asserts/css/Control.FullScreen.css" rel="stylesheet" />
+
+    <script src="./asserts/js/jquery.js?6863520000" language="javascript"></script>
+    <script src="./asserts/js/leaflet.1.4.0.js" language="javascript"></script>></script>
+    <script src="./asserts/js/Control.FullScreen.min.js" language="javascript"></script>></script>
+    <script src="./asserts/js/d3.v4.min.js" language="javascript"></script>></script>
+    <script src="./asserts/js/topojson.v1.min.js" language="javascript"></script>></script>
+    <script src="./asserts/js/queue.v1.min.js?6863520000" language="javascript"></script>
+
+    <style>
+        .map {
+            width: 90%;
+            height: 80%;
+        }
+
+        .info {
+            padding: 6px;
+            font: 12px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+
+            .info h4 {
+                margin: 0 0 5px;
+                color: #777;
+                font: 12px Arial, Helvetica, sans-serif;
+            }
+        /* Legend */
+        .legend {
+            line-height: 18px;
+            color: #555;
+            font-size: smaller;
+        }
+
+            .legend i {
+                width: 18px;
+                height: 18px;
+                float: left;
+                margin-right: 8px;
+                opacity: 0.7;
+            }
+    </style>
+</head>
+<body>
+
+    <div>
+        <h1 style="color:navy;">Flood Forecast for River Basins based on IMD Rainfall Forecast</h1>
+        <h3>Cavery basin</h3>
+
+        <div class="map" id="mapcon" style="float:left;"> </div>
+    </div>
+    <script type="text/javascript">
+
+        var neighbors;
+        var geowatershed;
+        var geojson;
+        var wsgeojson;
+        //var co = d3.scaleOrdinal(d3.schemeCategory20b);
+        var co = d3.scaleThreshold()
+            //.domain([1, 10, 20, 40, 70, 130, 200])
+            //.range(["#cacaca", "#ffff00", "#70a800", "#267300", "#00c5ff", "#004da8", "#FFA500", "#f52525"]);
+            .domain([1, 5, 10, 15, 30, 45, 60])
+            .range(["#cacaca", "#fde0dd", "#fcc5c0", "#fa9fb5", "#f768a1", "#dd3497", "#ae017e", "#7a0177"]);
+
+        var rchco = d3.scaleThreshold()
+            .domain([0.5, 10, 20, 50, 100, 500])
+            .range(["#ffff00", "#70a800", "#267300", "#00c5ff", "#004da8", "#FFA500", "#f52525"]);
+        //.range(["#ffffcc", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#0c2c84"]);
+        //.range(["#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"]);
+
+        //RdYlBu: {
+        //    3: ["#fc8d59", "#ffffbf", "#91bfdb"],
+        //        4: ["#d7191c", "#fdae61", "#abd9e9", "#2c7bb6"],
+        //        5: ["#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#2c7bb6"],
+        //        6: ["#d73027", "#fc8d59", "#fee090", "#e0f3f8", "#91bfdb", "#4575b4"],
+        //        7: ["#d73027", "#fc8d59", "#fee090", "#ffffbf", "#e0f3f8", "#91bfdb", "#4575b4"],
+        //            8: ["#d73027", "#f46d43", "#fdae61", "#fee090", "#e0f3f8", "#abd9e9", "#74add1", "#4575b4"], 9: ["#d73027", "#f46d43", "#fdae61", "#fee090", "#ffffbf", "#e0f3f8", "#abd9e9", "#74add1", "#4575b4"], 10: ["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee090", "#e0f3f8", "#abd9e9", "#74add1", "#4575b4", "#313695"], 11: ["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee090", "#ffffbf", "#e0f3f8", "#abd9e9", "#74add1", "#4575b4", "#313695"]
+        //},
+
+        //Blues: {
+        //    3: ["#deebf7", "#9ecae1", "#3182bd"], 4: ["#eff3ff", "#bdd7e7", "#6baed6", "#2171b5"],
+        //        5: ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"],
+        //        6: ["#eff3ff", "#c6dbef", "#9ecae1", "#6baed6", "#3182bd", "#08519c"],
+        //        7: ["#eff3ff", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#084594"],
+        //            8: ["#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#084594"],
+        //        9: ["#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#08519c", "#08306b"]
+        //},
+
+        var layer = "terrain";
+
+
+        var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+
+        var map = new L.Map('mapcon',
+            {
+                layers: [OpenStreetMap],
+                center: new L.LatLng(11.75, 77.43),
+                zoom: 8
+            });
+
+        map.createPane('labels');
+        map.getPane('labels').style.zIndex = 650;
+        map.getPane('labels').style.pointerEvents = 'none';
+
+        var cartodbAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>';
+        var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+            attribution: cartodbAttribution,
+            pane: 'labels'
+        }).addTo(map);
+
+        function style(feat, i) {
+
+            ////console.log(feat);
+            ////console.log(feat.indie);
+
+            ////console.log(neighbors[i]);
+
+            //var i = feat.indie;
+            //var coco = co(feat.color = d3.max(neighbors[i], function (n) {
+            //    //console.log(n);
+            //    //console.log(geowatershed.features[n].color);
+            //    return geowatershed.features[n].color;
+            //}) + 1 | 0);
+
+            //console.log(feat.properties.value)
+
+            var coco = co(feat.color = feat.properties.value);
+            //console.log(coco);
+            return {
+                color: "#ccc",
+                fillColor: coco,
+                fillOpacity: .5,
+                weight: 1.2
+            }
+        }
+        //map.addLayer(OpenStreetMap_BlackAndWhite)//new L.StamenTileLayer(layer));
+        //        window.onload = function () {
+        var neighbors
+        var wsLayer = new L.LayerGroup();
+        var rchLayer = new L.LayerGroup();
+        var bsnLayer = new L.LayerGroup();
+        /////////////////// Reach Layer to add /////////////////////
+        var getStyle = function (feature) {
+            var area = feature.properties.value;
+
+
+
+            //var area = feature.properties.AreaC;
+            var weight;
+            if (area > 500) { weight = 3; }
+            else if (area > 100) { weight = 2.5; }
+            else if (area > 50) { weight = 2; }
+            else if (area > 20) { weight = 1.5; }
+            else if (area > 10) { weight = 1; }
+            else { weight = 0.5; }
+
+            //console.log([area, weight, rchco(area)]);
+
+            return {
+                color: rchco(area),
+                fillColor: rchco(area),
+                weight: weight
+            }
+        };
+
+        var rchfile = "./asserts/data/test/CAV_IMD-GFS_RCH_03072018120000.csv";
+        var subfile = "./asserts/data/test/CAV_IMD-GFS_SUB_03072018120000.csv";
+
+        function loadrch() {
+            var rchreq = new XMLHttpRequest();
+            var rchurl = 'json/reach/CAV.json'
+
+            rchreq.open('GET', rchurl, true);
+            rchreq.onreadystatechange = rchhandler;
+            rchreq.send();
+
+            function rchhandler() {
+
+                if (rchreq.readyState === XMLHttpRequest.DONE) {
+
+                    try {
+                        topoob = JSON.parse(rchreq.responseText)
+                        var objname = Object.keys(topoob.objects)[0];
+
+                        //console.log(objname);
+
+                        neighbors = topojson.neighbors(topoob.objects[objname].geometries);
+                        toporchlayer = topojson.feature(topoob, topoob.objects[objname])
+
+                        queue()
+                            .defer(d3.csv, rchfile)
+                            .await(function (err, data) {
+                                toporchlayer.features = toporchlayer.features.map(function (fm, i) {
+
+                                    //console.log(fm.properties.Subbasin);
+                                    var ret = fm;
+
+                                    var datavalue = data.filter(function (dv) {
+                                        return dv.Subbasin == fm.properties.Subbasin;
+                                    });
+
+                                    var fldname = 'FLOW_OUTcms';
+                                    var gv = NaN;
+                                    if (datavalue.length != 0) {
+                                        gv = Number(datavalue[0][fldname]);
+                                    } else console.log("Error : " + fm.properties.Subbasin);
+
+                                    ret.properties.value = gv;
+                                    ret.indie = i;
+                                    return ret
+                                });
+
+                                rchgeojson = L.geoJson(toporchlayer, { style: getStyle, onEachFeature: onRCHFeature })
+                                    .addTo(rchLayer);
+                            });
+
+                        //rchgeojson = L.geoJson(toporchlayer, {
+                        //    style: getStyle
+                        //    //{
+                        //    //    color: "blue",
+                        //    //    //fillOpacity: 1,
+                        //    //    weight: 1
+                        //    //}
+                        //}).addTo(rchLayer);
+                        ////console.log('neigh', neighbors)
+                    }
+                    catch (e) {
+                        geojson = {};
+                        //console.log(e)
+                    }
+
+                    function highlightRCHFeature(e) {
+                        var layer = e.target;
+
+                        //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                        //    layer.bringToFront();
+                        //}
+                        info.update(layer.feature.properties);
+                    }
+
+                    function resetRCHHighlight(e) {
+
+                        var layer = e.target;
+                        info.update();
+                    }
+
+                    function onRCHFeature(feature, layer) {
+                        layer.on({
+                            mouseover: highlightRCHFeature,
+                            mouseout: resetRCHHighlight
+                            //click: zoomToFeature
+                        })
+                    }
+                }
+            }
+        }
+
+        /////////////////// Basin outer Layer to add /////////////////////
+        var basinreq = new XMLHttpRequest();
+        var basinurl = 'json/basin/CAV.json'
+
+        basinreq.open('GET', basinurl, true);
+        basinreq.onreadystatechange = basinhandler;
+        basinreq.send();
+
+        function basinhandler() {
+
+            if (basinreq.readyState === XMLHttpRequest.DONE) {
+
+                try {
+                    topoob = JSON.parse(basinreq.responseText)
+                    var objname = Object.keys(topoob.objects)[0];
+
+                    //console.log(objname);
+
+                    neighbors = topojson.neighbors(topoob.objects[objname].geometries);
+                    basinlayer = topojson.feature(topoob, topoob.objects[objname])
+
+                    geojson = L.geoJson(basinlayer, {
+                        style: {
+                            color: "#000",
+                            fillOpacity: 0,
+                            weight: 1.5
+                        }
+                    }).addTo(map); //.addTo(bsnLayer);
+                    //console.log('neigh', neighbors)
+                }
+                catch (e) {
+                    geojson = {};
+                    //console.log(e)
+                }
+            }
+        }
+
+        ///////////////////////////////////////
+        //function style(feat, i) {
+
+        //    ////console.log(feat);
+        //    ////console.log(feat.indie);
+
+        //    ////console.log(neighbors[i]);
+
+        //    //var i = feat.indie;
+        //    //var coco = co(feat.color = d3.max(neighbors[i], function (n) {
+        //    //    //console.log(n);
+        //    //    //console.log(geowatershed.features[n].color);
+        //    //    return geowatershed.features[n].color;
+        //    //}) + 1 | 0);
+
+        //    //console.log(feat.properties.value)
+
+        //    var coco = co(feat.color = feat.properties.value);
+        //    //console.log(coco);
+        //    return {
+        //        color: "#ccc",
+        //        fillColor: coco,
+        //        fillOpacity: .5,
+        //        weight: 1.2
+        //    }
+        //}
+
+        ///////////////////// Rainfall /////////////////////
+        var req = new XMLHttpRequest();
+        var url = 'json/watershed/CAV.json'
+
+        req.open('GET', url, true);
+        req.onreadystatechange = handler;
+        req.send();
+        var topoob = {};
+
+        function handler() {
+
+            if (req.readyState === XMLHttpRequest.DONE) {
+
+                //var OpenStreetMap_BlackAndWhite = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+                //    maxZoom: 18,
+                //    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                //});
+
+                //var OpenStreetMap_BlackAndWhite = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                //    maxZoom: 18,
+                //    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                //});
+
+                //map.addLayer(OpenStreetMap_BlackAndWhite)//new L.StamenTileLayer(layer));
+                // try and catch my json parsing of the responseText
+                try {
+                    topoob = JSON.parse(req.responseText)
+                    var objname = Object.keys(topoob.objects)[0];
+
+                    //console.log(objname);
+
+                    neighbors = topojson.neighbors(topoob.objects[objname].geometries);
+                    geowatershed = topojson.feature(topoob, topoob.objects[objname])
+
+                    queue()
+                        .defer(d3.csv, subfile)
+                        .await(function (err, data) {
+                            geowatershed.features = geowatershed.features.map(function (fm, i) {
+
+                                //console.log(fm.properties.Subbasin);
+                                var ret = fm;
+
+                                var datavalue = data.filter(function (dv) {
+                                    return dv.Subbasin == fm.properties.Subbasin;
+                                });
+
+                                var fldname = 'PRECIPmm';
+                                var gv = NaN;
+                                if (datavalue.length != 0) {
+                                    gv = Number(datavalue[0][fldname]);
+                                } else console.log("Error : " + fm.properties.Subbasin);
+
+                                ret.properties.value = gv;
+                                ret.indie = i;
+                                return ret
+                            });
+
+                            geojson = L.geoJson(geowatershed, { style: style, onEachFeature: onEachFeature })
+                                .addTo(wsLayer);
+
+                            geojson.eachLayer(function (layer) {
+                                //console.log(layer.feature.properties.Subbasin);
+                                layer.bindPopup('Subbasin No : ' + layer.feature.properties.Subbasin.toString());
+                            });
+
+                        });
+
+                    //wsgeojson = L.geoJson(geowatershed, { style: style, onEachFeature: onEachFeature })
+                    //    .addTo(wsLayer);
+                    //console.log('neigh', neighbors)
+
+                    loadrch();
+                    loadlegend();
+                    L.control.scale().addTo(map);
+                    //console.log(geowatershed);
+                    //map
+                    //    .fitBounds(geojson.getBounds())
+                    //    .setMaxBounds(geojson.getBounds().pad(1.0))
+                    //    .zoomIn();
+
+                }
+                catch (e) {
+                    geojson = {};
+                    //console.log(e)
+                }
+                //console.log(geowatershed)
+
+                function highlightFeature(e) {
+                    var layer = e.target;
+                    layer.setStyle({
+                        weight: 3,
+                        color: 'cyan',
+                        dashArray: '',
+                        fillOpacity: .8
+                    })
+                    //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                    //    layer.bringToFront();
+                    //}
+                    info.update(layer.feature.properties);
+                }
+
+                function resetHighlight(e) {
+
+                    var layer = e.target;
+                    layer.setStyle(style(e.target.feature));
+                    //console.log(e.target.feature);
+                    //geojson.resetStyle(e.target);
+                    //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                    //    layer.bringToBack();
+                    //}
+
+                    info.update();
+                }
+
+                function zoomToFeature(e) {
+                    map.fitBounds(e.target.getBounds());
+                }
+
+                function onEachFeature(feature, layer) {
+                    layer.on({
+                        mouseover: highlightFeature,
+                        mouseout: resetHighlight,
+                        click: zoomToFeature
+                    })
+                }
+
+                //var info = L.control();
+                //info.onAdd = function (map) {
+                //    this._div = L.DomUtil.create('div', 'info');
+                //    this.update();
+                //    return this._div;
+                //}
+
+                //info.update = function (props) {
+
+                //    //console.log(props);//undefined
+
+                //    this._div.innerHTML = "<h4>Subbasin No : " + (props ? props.Subbasin : "") + "</h4>" + (props ? props.value : "")
+                //}
+
+                //info.addTo(map);
+
+            }
+        }
+
+        ///////////////////// Water Yield /////////////////////
+        var wyLayer = new L.LayerGroup();
+        var wygeojson;
+        // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
+        $.getJSON(url, function (data) {
+
+            //topoob = JSON.parse(basinreq.responseText)
+            var objname = Object.keys(data.objects)[0];
+            //neighbors = topojson.neighbors(data.objects[objname].geometries);
+            wyTopoJson = topojson.feature(data, data.objects[objname])
+
+            queue()
+                .defer(d3.csv, subfile)
+                .await(function (err, data) {
+                    wyTopoJson.features = wyTopoJson.features.map(function (fm, i) {
+
+                        //console.log(fm.properties.Subbasin);
+                        var ret = fm;
+
+                        var datavalue = data.filter(function (dv) {
+                            return dv.Subbasin == fm.properties.Subbasin;
+                        });
+
+                        var fldname = 'WYLDmm';
+                        var gv = NaN;
+                        if (datavalue.length != 0) {
+                            gv = Number(datavalue[0][fldname]);
+                        } else console.log("Error : " + fm.properties.Subbasin);
+
+                        ret.properties.value = gv;
+                        ret.indie = i;
+                        return ret
+                    });
+
+                    wygeojson = L.geoJson(wyTopoJson, { style: style, onEachFeature: onEachFeature })
+                        .addTo(wyLayer);
+
+                    geojson.eachLayer(function (layer) {
+                        //console.log(layer.feature.properties.Subbasin);
+                        layer.bindPopup('Subbasin No : ' + layer.feature.properties.Subbasin.toString());
+                    });
+
+                });
+
+            //basingeojson = L.geoJson(basinlayer).addTo(coolPlaces);
+            ////console.log('neigh', neighbors)
+            function highlightFeature(e) {
+                var layer = e.target;
+                layer.setStyle({
+                    weight: 3,
+                    color: 'cyan',
+                    dashArray: '',
+                    fillOpacity: .8
+                })
+                //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                //    layer.bringToFront();
+                //}
+                info.update(layer.feature.properties);
+            }
+
+            function resetHighlight(e) {
+
+                var layer = e.target;
+                layer.setStyle(style(e.target.feature));
+                //console.log(e.target.feature);
+                //geojson.resetStyle(e.target);
+                //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                //    layer.bringToBack();
+                //}
+
+                info.update();
+            }
+
+            function zoomToFeature(e) {
+                map.fitBounds(e.target.getBounds());
+            }
+
+            function onEachFeature(feature, layer) {
+                layer.on({
+                    mouseover: highlightFeature,
+                    mouseout: resetHighlight,
+                    click: zoomToFeature
+                })
+            }
+
+        });
+
+        ///////////////////// Evapo-transpiration /////////////////////
+        var etLayer = new L.LayerGroup();
+        var etgeojson;
+        // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
+        $.getJSON(url, function (data) {
+
+            //topoob = JSON.parse(basinreq.responseText)
+            var objname = Object.keys(data.objects)[0];
+            //neighbors = topojson.neighbors(data.objects[objname].geometries);
+            etTopoJson = topojson.feature(data, data.objects[objname])
+
+            queue()
+                .defer(d3.csv, subfile)
+                .await(function (err, data) {
+                    etTopoJson.features = etTopoJson.features.map(function (fm, i) {
+
+                        //console.log(fm.properties.Subbasin);
+                        var ret = fm;
+
+                        var datavalue = data.filter(function (dv) {
+                            return dv.Subbasin == fm.properties.Subbasin;
+                        });
+
+                        var fldname = 'ETmm';
+                        var gv = NaN;
+                        if (datavalue.length != 0) {
+                            gv = Number(datavalue[0][fldname]);
+                        } else console.log("Error : " + fm.properties.Subbasin);
+
+                        ret.properties.value = gv;
+                        ret.indie = i;
+                        return ret
+                    });
+
+                    etgeojson = L.geoJson(etTopoJson, { style: style, onEachFeature: onEachFeature })
+                        .addTo(etLayer);
+
+                    geojson.eachLayer(function (layer) {
+                        //console.log(layer.feature.properties.Subbasin);
+                        layer.bindPopup('Subbasin No : ' + layer.feature.properties.Subbasin.toString());
+                    });
+
+                });
+
+            //basingeojson = L.geoJson(basinlayer).addTo(coolPlaces);
+            ////console.log('neigh', neighbors)
+            function highlightFeature(e) {
+                var layer = e.target;
+                layer.setStyle({
+                    weight: 3,
+                    color: 'cyan',
+                    dashArray: '',
+                    fillOpacity: .8
+                })
+                //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                //    layer.bringToFront();
+                //}
+                info.update(layer.feature.properties);
+            }
+
+            function resetHighlight(e) {
+
+                var layer = e.target;
+                layer.setStyle(style(e.target.feature));
+                //console.log(e.target.feature);
+                //geojson.resetStyle(e.target);
+                //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                //    layer.bringToBack();
+                //}
+
+                info.update();
+            }
+
+            function zoomToFeature(e) {
+                map.fitBounds(e.target.getBounds());
+            }
+
+            function onEachFeature(feature, layer) {
+                layer.on({
+                    mouseover: highlightFeature,
+                    mouseout: resetHighlight,
+                    click: zoomToFeature
+                })
+            }
+
+        });
+
+        ///////////////////// Soil Moiture status /////////////////////
+        var smLayer = new L.LayerGroup();
+        var smgeojson;
+        // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
+        $.getJSON(url, function (data) {
+
+            //topoob = JSON.parse(basinreq.responseText)
+            var objname = Object.keys(data.objects)[0];
+            //neighbors = topojson.neighbors(data.objects[objname].geometries);
+            smTopoJson = topojson.feature(data, data.objects[objname])
+
+            queue()
+                .defer(d3.csv, subfile)
+                .await(function (err, data) {
+                    smTopoJson.features = smTopoJson.features.map(function (fm, i) {
+
+                        //console.log(fm.properties.Subbasin);
+                        var ret = fm;
+
+                        var datavalue = data.filter(function (dv) {
+                            return dv.Subbasin == fm.properties.Subbasin;
+                        });
+
+                        var fldname = 'SWmm';
+                        var gv = NaN;
+                        if (datavalue.length != 0) {
+                            gv = Number(datavalue[0][fldname]);
+                        } else console.log("Error : " + fm.properties.Subbasin);
+
+                        ret.properties.value = gv;
+                        ret.indie = i;
+                        return ret
+                    });
+
+                    smgeojson = L.geoJson(smTopoJson, { style: style, onEachFeature: onEachFeature })
+                        .addTo(smLayer);
+
+                    smgeojson.eachLayer(function (layer) {
+                        //console.log(layer.feature.properties.Subbasin);
+                        layer.bindPopup('Subbasin No : ' + layer.feature.properties.Subbasin.toString());
+                    });
+
+                });
+
+            //basingeojson = L.geoJson(basinlayer).addTo(coolPlaces);
+            ////console.log('neigh', neighbors)
+            function highlightFeature(e) {
+                var layer = e.target;
+                layer.setStyle({
+                    weight: 3,
+                    color: 'cyan',
+                    dashArray: '',
+                    fillOpacity: .8
+                })
+                //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                //    layer.bringToFront();
+                //}
+                info.update(layer.feature.properties);
+            }
+
+            function resetHighlight(e) {
+
+                var layer = e.target;
+                layer.setStyle(style(e.target.feature));
+                //console.log(e.target.feature);
+                //geojson.resetStyle(e.target);
+                //if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                //    layer.bringToBack();
+                //}
+
+                info.update();
+            }
+
+            function zoomToFeature(e) {
+                map.fitBounds(e.target.getBounds());
+            }
+
+            function onEachFeature(feature, layer) {
+                layer.on({
+                    mouseover: highlightFeature,
+                    mouseout: resetHighlight,
+                    click: zoomToFeature
+                })
+            }
+
+        });
+
+
+        var info = L.control({ position: 'topleft' });
+        info.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        }
+
+        info.update = function (props) {
+            //console.log(props ? Object.keys(props) : props);//undefined
+            console.clear();
+            console.log(props);//undefined
+            this._div.innerHTML = "<h4>Subbasin No : " + (props ? props.Subbasin : "") + "</h4> <div style='text-align:center;'>" + (props ? props.value : "") + "</div>"
+        }
+
+        info.addTo(map);
+
+        //var map = L.map('map', {
+        //    layers: [OpenStreetMap] // only add one!
+        //})
+        //    .setView([11.75, 77.43], 7);
+
+        //var baseLayers = {
+        //    "OSM Mapnik": OpenStreetMap,
+        //    //"Landscape": landMap
+        //};
+
+        var overlays = {
+            //"Basin": bsnLayer,
+            "Rainfall (mm)": wsLayer,
+            "Water Yield (mm)": wyLayer,
+            "Evapo-transpiration (mm)": etLayer,
+            "Soil Moiture status (mm)": smLayer,
+            "Stream flow (cumecs)": rchLayer,
+        };
+        //console.log(coolPlaces);
+        //console.log(coolPlaces.layers.length);
+
+        L.control.layers(null, overlays, { collapsed: false }).addTo(map);
+
+        //        }
+
+        /// Legend ///////////////////////
+        function getColor(d) {
+            return d > 60 ? '#7a0177' :
+                d > 45 ? '#ae017e' :
+                    d > 30 ? '#dd3497' :
+                        d > 15 ? '#f768a1' :
+                            d > 10 ? '#fa9fb5' :
+                                d > 5 ? '#fcc5c0' :
+                                    d > 1 ? '#fde0dd' :
+                                        '#cacaca';
+        }
+
+        function loadlegend() {
+            var legend = L.control({ position: 'bottomright' });
+
+            legend.onAdd = function (map) {
+
+                var div = L.DomUtil.create('div', 'info legend'),
+                    grades = [1, 5, 10, 15, 30, 45, 60],
+                    labels = ['<strong style="font: 12px Arial, Helvetica, sans-serif; font-weight:bold; ">Subbasin Value (mm) </strong><br /><br />'];
+                div.innerHTML = labels;
+                // loop through our density intervals and generate a label with a colored square for each interval
+                for (var i = 0; i < grades.length; i++) {
+                    div.innerHTML +=
+                        '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                    //labels.push(
+                    //    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    //    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br />' : '+'));
+                }
+                //            .domain([0.5, 10, 20, 50, 100, 500])
+                //.range(["#fef0d9", "#fdd49e", "#fdbb84", "#fc8d59", "#ef6548", "#d7301f", "#990000"]);
+
+                div.innerHTML += '<br /><br /><strong style="font: 12px Arial, Helvetica, sans-serif; font-weight:bold; ">Stream Flow (cms) </strong><br /><br />';
+                var dmn = rchco.domain();
+                var clr = rchco.range();
+
+                for (var i = 0; i < dmn.length; i++) {
+                    div.innerHTML +=
+                        '<i style="background:' + clr[i + 1] + '"></i> ' +
+                        dmn[i] + (dmn[i + 1] ? '&ndash;' + dmn[i + 1] + '<br>' : '+');
+                    //labels.push(
+                    //    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    //    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br />' : '+'));
+                }
+
+                return div;
+            };
+
+            legend.addTo(map);
+        }
+
+        function multipleLayers() {
+            // parse the geojson (very simplified example here)
+            var zip = L.geoJson(zipjson, {});
+            var counties = L.geoJson(countiesjson, {});
+
+            // from there, similar to the example:
+            var usmap = L.tileLayer(url, {});
+
+            // initialize the map
+            var map = L.map('map', {
+                center: [39.73, -104.99],
+                zoom: 10,
+                layers: [usmap]
+            });
+
+            // specify the basemap and overlays to put in the layers control
+            var baseMaps = {
+                "US": usmap,
+            };
+
+            var overlayMaps = {
+                "Counties": counties,
+                "Zips": zip
+            };
+
+            // initialize up the L.control.layers
+            L.control.layers(baseMaps, overlayMaps).addTo(map);
+        }
+
+                //console.log(geowatershed);
+    
+                //var myVar = setInterval(
+                //    function () {
+                //        if (typeof wsgeojson == 'undefined') return;
+                //        queue()
+                //            .defer(d3.csv, "./data/test/CAV_IMD-GFS_SUB_03072018120000.csv")
+                //            .await(function (err, data) {
+                //                //geowatershed.features.map(function (fm, i) {
+
+                //                //    //console.log(fm.properties.Subbasin);
+                //                //    var ret = fm;
+
+                //                //    var datavalue = data.filter(function (dv) {
+                //                //        return dv.Subbasin == fm.properties.Subbasin;
+                //                //    });
+
+                //                //    var fldname = 'PRECIPmm';
+                //                //    var gv = NaN;
+                //                //    if (datavalue.length != 0) {
+                //                //        gv = Number(datavalue[0][fldname]);
+                //                //    } else console.log("Error : " + fm.properties.Subbasin);
+
+                //                //    ret.properties.value = gv;
+                //                //    ret.indie = i;
+                //                //    return ret
+                //                //});
+
+                //                //L.geoJson(geowatershed, {
+                //                //    style: function (feat) {
+
+                //                //        var layer = feat.layer;
+                //                //        //layer.setStyle(style(e.target.feature));
+                //                //        console.log(layer);
+
+                //                //        //console.log(feat.properties);
+                //                //        return { color: "red" };
+                //                //    }
+                //                //});
+                //                //.addTo(wsLayer);
+
+                //                wsgeojson.eachLayer(function (layer) {
+
+                //                    //console.log(layer);
+                //                    layer.setStyle({ fillColor: 'blue' });
+
+                //                    //if (layer.feature.properties.NAME == 'feature 1') {
+                //                    //    layer.setStyle({ fillColor: 'blue' })
+                //                    //}
+                //                });
+
+                //                clearInterval(myVar);
+                //            });
+                //    }, 1000);
+
+    </script>
+</body>
+</html>

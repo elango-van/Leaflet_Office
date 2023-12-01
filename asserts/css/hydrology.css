@@ -1,0 +1,670 @@
+﻿/*@@@@@@@@@@@@@@@@@ info and legend @@@@@@@@@@@@@@@@@@@@@@*/
+html,
+body {
+    padding : 0;
+    margin  : 0;
+    height  : 100%;
+    width   : 100vw;
+    overflow: hidden;
+    font    : 12px Arial, Helvetica, sans-serif;
+}
+
+.map {
+    position: relative;
+    width   : 100%;
+    height  : 100%;
+}
+
+.info {
+    padding      : 6px;
+    font         : 12px Arial, Helvetica, sans-serif;
+    /* background   : white; */
+    background   : rgba(255, 255, 255, 0.8);
+    box-shadow   : 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.info h4 {
+    margin: 0 0 5px;
+    color : #777;
+    font  : 12px Arial, Helvetica, sans-serif;
+}
+
+.info>div {
+    height: 20px;
+}
+
+/* Legend */
+
+
+.legend>div>i {
+    width       : 18px;
+    height      : 18px;
+    float       : left;
+    margin-right: 8px;
+    opacity     : 0.5;
+}
+
+.tbtoolTip {
+    font-family  : "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position     : absolute;
+    display      : none;
+    width        : 150px;
+    height       : auto;
+    background   : none repeat scroll 0 0 #FFFF99;
+    border       : 0 none;
+    border-radius: 8px 8px 8px 8px;
+    color        : black;
+    font         : 12px sans-serif;
+    padding      : 5px;
+    text-align   : center;
+    z-index      : 900;
+}
+
+.line {
+    fill: none;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-content {
+    width  : 400px;
+    padding: unset;
+    margin : 5px;
+}
+
+a {
+    color          : brown;
+    text-decoration: none;
+}
+
+#imdmodel {
+    margin     : 2px 0px;
+    font-weight: bolder;
+}
+
+.lblmdl {
+    margin-top: -15px;
+    position  : relative;
+}
+
+/*@@@@@@@@@@@@@@@@@ Dropdown selection @@@@@@@@@@@@@@@@@@@@@@*/
+#header {
+    background: #F9BA32;
+    background: -moz-linear-gradient(-45deg, #F9BA32 0%, #A1D6E2 50%, #1995AD 100%);
+    background: -webkit-linear-gradient(-45deg, #F9BA32 0%, #A1D6E2 50%, #1995AD 100%);
+    background: linear-gradient(135deg, #F9BA32 0%, #A1D6E2 50%, #1995AD 100%);
+
+    padding        : calc(0.3vh + 0.2em);
+    /* padding     : 5px; */
+    /* display     : flex;
+    justify-content: flex-start;
+    flex-direction : row;
+     */
+    /* width          : 100%; */
+    height         : 8%;
+}
+
+#header h1 {
+    display       : inline;
+    position      : absolute;
+    font-size     : 1.8VW;
+    color         : #002c54;
+    font-weight   : normal;
+    vertical-align: middle;
+    padding       : 0px;
+    margin        : 0px;
+    transform     : translateY(50%);
+}
+
+
+.btn {
+    border          : none;
+    padding         : 1px 0px;
+    text-align      : center;
+    text-decoration : none;
+    cursor          : pointer;
+    background-color: lightgray;
+    border-color    : #868e96;
+}
+
+.dropdown-menu {
+    position        : relative;
+    width           : 100%;
+    display         : none;
+    min-width       : 10rem;
+    padding         : .5rem 5px;
+    color           : #212529;
+    text-align      : left;
+    list-style      : none;
+    box-shadow      : 5px 5px 15px rgba(0, 0, 0, .15);
+    background-color: #f0f0f0;
+    background-clip : padding-box;
+    border          : 1px solid rgba(0, 0, 0, .15);
+    border-radius   : .25rem;
+    z-index         : 1000;
+}
+
+.dropdown-item {
+    display    : block;
+    padding    : .25rem;
+    clear      : both;
+    font-weight: 400;
+    color      : #212529;
+    text-align : inherit;
+    white-space: nowrap;
+    background : 0 0;
+    border     : 0;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+    color           : #fff;
+    text-decoration : none;
+    background-color: #007bff;
+}
+
+.dropdown-item.hover,
+.dropdown-item:hover {
+    color           : #fff;
+    text-decoration : none;
+    background-color: #007bff;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/*@@@@@@@@@@@@@@@@@ Alert Message @@@@@@@@@@@@@@@@@@@@@@*/
+
+.alert {
+    display            : none;
+    position           : fixed;
+    /* right           : 10px;
+    bottom             : 10px; */
+    /* height          : 100px; */
+    min-width          : 20%;
+    padding            : 10px;
+    background-color   : rgb(247, 196, 196);
+    margin             : auto;
+    z-index            : 1100;
+    text-align         : center;
+    vertical-align     : middle;
+    border-radius      : 5px;
+    border             : 1px groove darkgoldenrod;
+
+    top      : 50%;
+    left     : 50%;
+    transform: translate(-50%, -50%);
+}
+
+#divmsg {
+    position      : relative;
+    max-height    : 70px;
+    text-align    : center;
+    vertical-align: middle;
+    font-size     : 16px;
+    font-weight   : 200;
+    padding       : 0px 10px;
+    /* margin-top    : 8px; */
+    overflow-y    : auto;
+}
+
+.closebtn {
+    color        : red;
+    font-size    : 15pt;
+    font-weight  : bolder;
+    cursor       : pointer;
+    transition   : 0.3s;
+    position     : absolute;
+    top          : 2px;
+    right        : 5px;
+    /* border    : 1px ridge red; */
+    /* border    : 1px ridge darkred;
+    border-radius: 10px; */
+    width        : 22px;
+    z-index            : 1110;
+    /* border-radius: 15px;
+    background-color: lightpink; */
+}
+
+/*@@@@@@@@@@@@@@@@@ days radio button @@@@@@@@@@@@@@@@@@@@@@*/
+.divday {
+    margin    : unset;
+    margin-top: -25px;
+}
+
+.divday div {
+    margin-bottom: 5px;
+    width        : 60px;
+}
+
+.leaflet-bottom .leaflet-right .leaflet-control input[type=checkbox] {
+    top      : 50%;
+    transform: translateY(-50%);
+}
+
+.label {
+    font-size     : 20px;
+    color         : #ffffff;
+    text-shadow   : 0 0 5px #FFF, 0 0 10px #FFF, 0 0 15px #FFF, 0 0 20px #57FFF3, 0 0 30px #57FFF3, 0 0 40px #57FFF3, 0 0 55px #57FFF3, 0 0 75px #57FFF3;
+    letter-spacing: 5px;
+    width         : auto;
+    /* z-index: 12000; */
+}
+
+.basintooltip {
+    background-color: yellow;
+}
+
+.grid line {
+    stroke         : lightgrey;
+    stroke-opacity : 0.7;
+    shape-rendering: crispEdges;
+}
+
+.grid path {
+    stroke-width: 0;
+}
+
+.ffdate {
+    -webkit-box-shadow: 5px 5px 15px 1px #2f3131;
+    box-shadow        : 5px 5px 15px 1px #2f3131;
+    color             : #2f3131;
+    font-weight       : bold;
+}
+
+.ffdate h4 {
+    font-weight: bold;
+}
+
+/*another-popop style*/
+.another-popup .leaflet-popup-content-wrapper {
+    line-height  : 24px;
+    border-radius: 10px;
+    max-width    : 120px;
+    padding      : 2px;
+}
+
+.another-popup .leaflet-popup-tip {
+    background: transparent;
+    border    : none;
+    box-shadow: none;
+}
+
+/*@@@@@@@@@@@@@@ Tab Control @@@@@@@@@@@@@@@@@@@@*/
+.tabs {
+    position  : relative;
+    min-height: 280px;
+    clear     : both;
+    margin    : 25px 0;
+    width     : 400px;
+}
+
+.tab {
+    float  : left;
+    display: none;
+    width  : 380px;
+}
+
+.tab:first-of-type {
+    display: inline-block;
+}
+
+.tabs-link {
+    position: relative;
+    top     : -14px;
+    height  : 20px;
+    left    : -40px;
+}
+
+.tabs #lableheader {
+    color          : maroon;
+    /* float       : right; */
+    top            : 0px;
+    height         : 20px;
+    display        : inline-block;
+    padding        : 5px;
+    position       : relative;
+    list-style-type: none;
+    margin-right   : 10px;
+}
+
+#imdheader {
+    color          : maroon;
+    /* float       : right; */
+    bottom         : -30px;
+    right          : 0px;
+    height         : 20px;
+    display        : inline-block;
+    padding        : 5px;
+    position       : absolute;
+    list-style-type: none;
+    margin-right   : 42px;
+}
+
+.tab-link {
+    background     : #eee;
+    display        : inline-block;
+    padding        : 10px;
+    border         : 1px solid #ccc;
+    margin-left    : -1px;
+    position       : relative;
+    list-style-type: none;
+    left           : 1px;
+    top            : 1px;
+    cursor         : pointer;
+}
+
+.tab-link {
+    background: #f8f8f8;
+}
+
+.content {
+    background: white;
+    position  : absolute;
+    top       : 30px;
+    left      : 0;
+    right     : 0;
+    bottom    : 0;
+    width     : 380px;
+    overflow-y: auto;
+}
+
+.tab:target {
+    display: block;
+}
+
+.leaflet-popup {
+    background-color: white;
+}
+
+.content table {
+    width          : 100%;
+    border         : 0px;
+    border-collapse: collapse;
+    border-spacing : 0px;
+}
+
+.content th {
+    border-bottom: 2px double #ccc;
+    font-size    : 12px;
+    color        : maroon;
+    text-align   : left;
+    padding      : 5px 0;
+}
+
+.content td {
+    border-bottom: 1px groove grey;
+    font-size    : 12px;
+    font-style   : normal;
+    padding      : 5px;
+}
+
+/*@@@@@@@@@@@@@@@@ Vertical Menu @@@@@@@@@@@@@*/
+.vertical-menu {
+    width: 100%;
+}
+
+.vertical-menu a {
+    background-color: #eee;
+    color           : black;
+    display         : block;
+    padding         : 12px;
+    text-decoration : none;
+}
+
+.vertical-menu a:hover {
+    background-color: #ccc;
+}
+
+.vertical-menu a.active {
+    background-color: #0078A8;
+    color           : white;
+}
+
+/*@@@@@@@@@@@@ show help file @@@@@@@@@@@@@@@@*/
+.pdfshow {
+    z-index: 2999;
+    display: none;
+}
+
+.pdfshow .pdf-show {
+    width        : 50%;
+    height       : 80%;
+    /* background: #000; */
+    position     : absolute;
+    top          : 50%;
+    left         : 50%;
+    transform    : translate(-50%, -50%);
+    overflow     : hidden;
+    border       : 1px solid #888888;
+    z-index      : 2999;
+}
+
+.pdf-show button {
+    position     : absolute;
+    top          : 2px;
+    right        : 16px;
+    z-index      : 2999;
+    cursor       : pointer;
+    font-family  : Arial;
+    font-size    : medium;
+    color        : red;
+    border-radius: 50%;
+}
+
+.pdf-show iframe {
+    width   : 100%;
+    height  : 100%;
+    position: absolute;
+    top     : 0;
+    left    : 0;
+}
+
+
+.sidenav {
+    width      : 193px;
+    padding-top: 10px;
+    font-size  : 13px;
+    overflow-y : auto;
+}
+
+input [type="radio"] {
+    margin: 10px;
+}
+
+.sidenav a:hover,
+.offcanvas a:focus {
+    color: #f1f1f1;
+}
+
+input[type="radio"i] {
+    background-color: initial;
+    cursor          : default;
+    appearance      : auto;
+    box-sizing      : border-box;
+    margin          : 5px;
+    padding         : initial;
+    border          : initial;
+}
+
+fieldset {
+    background-color: rgb(130, 207, 251);
+    border-color    : darkblue;
+    border-style    : solid;
+    border-width    : 1px;
+    border-radius   : 5px;
+}
+
+legend {
+    line-height        : 18px;
+    font-size          : smaller;
+    /* background-color: darkblue; */
+    /* background-color   : rgb(106 99 247); */
+    background-color   : navy;
+    color              : white;
+    padding            : 5px 10px;
+    border-radius      : 3px;
+}
+
+#rundate {
+    top        : 30px;
+    right      : 30px;
+    color      : white;
+    position   : absolute;
+    font-size  : 16px;
+    font-weight: bold;
+    z-index    : 1000;
+}
+
+footer {
+    position: absolute;
+    bottom  : 0px;
+    width   : 100%;
+    height  : 40px;
+    padding : 5px;
+}
+
+#mapwrapper {
+    position: absolute;
+    width: 100%;
+    clear: both;
+}
+
+#mapwrap {
+    position: relative;
+    margin-left : 5px;
+    float       : left;
+    margin-right: 5px;
+}
+
+#leftwrap {
+    position: relative;
+    float     : left;
+    overflow-y: auto;
+}
+
+#leftwrap img {
+    width              : 30px;
+    height             : 30px;
+    margin-left        : 20px;
+    background-color   : #89CFF0;
+}
+
+@media screen and (max-width: 900px) {
+    #header {
+        height         : 5%;
+    }
+    #leftwrap{
+        display: inline-block;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    #header {
+        height         : 3%;
+    }
+    #leftwrap{
+        display: inline-block;
+    }
+    .sidenav{
+        width: 150px;
+    }
+    fieldset>div{
+        font-size: 10px;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    #header {
+        height         : 2%;
+    }
+    /* .sidenav{
+        width: 150px;
+    }
+    fieldset>div{
+        font-size: 10px;
+    } */
+    #leftwrap{
+        display: none;
+        position: absolute;
+        top: 10px;
+        left: 55px;
+        background-color: whitesmoke;
+        z-index: 1113;
+    }
+
+    #barContainer{
+        display: block;
+        /* display: inline-block; */
+    }
+}
+.resetzoom{
+    cursor: pointer;
+    border: 1px ridge #0078A8;
+    /* color: white; */
+    padding: 5px 3px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 2px 0px;
+    width: 92%;
+    /* font-size: 16px; */
+/* 
+    align-items: center;
+    align-self: auto;
+    align-content: baseline;
+    align-tracks: 25px;
+
+    justify-content: baseline;
+    justify-self: auto;
+    justify-items: auto;
+    justify-tracks: 25px;
+    text-justify: auto;
+    -ms-text-justify: auto;
+
+    grid-template-columns: auto;
+    grid-template-rows: auto;
+    grid-template-areas: none;
+    grid-template: auto;
+
+    row-gap: 20px;
+    grid-row: auto;
+    grid-row-end: auto;
+    grid-row-start: auto;
+    grid-auto-rows: auto;
+    -ms-grid-row: auto;
+    -ms-grid-row-align: center;
+    -ms-grid-row-span: inherit;
+
+    column-gap: normal;
+    column-count: auto;
+    column-rule: #002c54;
+    column-width: auto;
+    columns: auto;
+    column-fill: auto;
+    color-interpolation-filters: auto;
+    column-rule-color: #002c54;
+    column-rule-style:dashed;
+    column-rule-width: 10px;
+    column-span: all;
+    grid-column: auto;
+    grid-column-end: auto;
+    grid-column-start: auto;
+    -moz-column-count: auto;
+    -moz-column-gap: normal;
+    -moz-column-rule:#002c54; */
+
+}
+#showbasin {
+    background-color: #e7e7e7; /* Green */
+    border: none;
+    /* color: white; */
+    padding: 5px 2px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    /* font-size: 16px; */
+    margin: 4px 2px;
+    cursor: pointer;
+  }

@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="./js/d3.v4.min.js?6863520000"></script>
+    <style>
+        svg circle {
+            stroke: black;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="50%" height="50%">
+    </svg>
+    <div id="parent">
+
+    </div>
+    <script>
+        var data = [1,2]
+        var divs = d3.select('#parent').selectAll('*').data(data).enter().append('div');
+
+        divs.append('p').text(function (d) {
+            return 'from data[' + d + ']';
+        })
+        divs.append('p').text(function (d) {
+            return 'from data[' + d + ']';
+        })
+    </script>
+    <script>
+
+        /**
+         * @param {String} HTML representing a single element
+         * @return {Element}
+         */
+        function htmlToElement(html) {
+            var template = document.createElement('template');
+            html = html.trim(); // Never return a text node of whitespace as the result
+            template.innerHTML = html;
+            return template.content.firstChild;
+        }
+
+        var td = htmlToElement('<td>foo</td>'),
+            div = htmlToElement('<div><span>nested</span> <span>stuff</span></div>');
+        //console.log(td);
+        //console.log(div);
+        /**
+         * @param {String} HTML representing any number of sibling elements
+         * @return {NodeList} 
+         */
+        function htmlToElements(html) {
+            var template = document.createElement('template');
+            template.innerHTML = html;
+            return template.content.childNodes;
+        }
+
+        var rows = htmlToElements('<tr><td>foo</td></tr><tr><td>bar</td></tr>');
+        //console.log(rows);
+    </script>
+    <script>
+        var svg = d3.select('svg');
+
+        var dataSet = [1, 2, 3, 4];
+
+        var circle = svg.selectAll('circle')
+            .data(dataSet)
+            .enter().append('circle')
+            .attr({
+                r: 50,
+                cx: function (d, i) { return 60 + i * 50 },
+                cy: 60,
+                fill: 'red',
+                id: function (d, i) { return "circle-" + d; }
+            });
+
+        d3.selectAll("circle")
+            .on("mouseover", function () {
+                // move to front
+                this.parentNode.appendChild(this);
+            })
+            .on("mouseout", function (d) {
+                // move back to origin
+                var nextSibling = d3.select("#circle-" + (d + 1)).node();
+                this.parentNode.insertBefore(this, nextSibling);
+            });
+    </script>
+</body>
+</html>

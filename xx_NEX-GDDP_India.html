@@ -1,0 +1,1850 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>NASA Earth Exchange Global Daily Downscaled Projections (NEX-GDDP) - India</title>
+    <style>
+        body {
+            background: #F5F4EB;
+            *color: #434E3C;
+            color: #385647;
+            *overflow: auto;
+            font-size: medium;
+        }
+
+        #wrapper {
+            width: 640px;
+            *margin: 30px auto 0;
+            border: 1px solid #bbb;
+            background-color: #434E3C;
+        }
+
+        #map {
+            position: relative;
+            border: 1px solid #bbb;
+            background-color: #434E3C;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        #selection {
+            *border: 1px solid #bbb;
+            *background-color: #fff;
+            width: 640px;
+            *height: 100px;
+            margin-top: -15px;
+        }
+
+        .stroke {
+            fill: none;
+            *stroke: #ccc;
+            stroke-width: 1px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #385647;
+        }
+
+        .fill {
+            fill: #fff;
+        }
+
+        .country {
+            *fill: steelblue;
+            *stroke: #ccc;
+            stroke-width: 0px;
+            stroke-opacity: 0;
+            fill-opacity: 0.8;
+        }
+
+        .district {
+            *fill: steelblue;
+            stroke: #000000;
+            stroke-width: 1.5px;
+        }
+
+        #clock {
+            margin-top: 10px;
+            *color: #F5F4EB;
+            font-weight: bold;
+        }
+
+        #play {
+            margin-left: 10px;
+            margin-top: 10px;
+        }
+
+        /*input, button {
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,.25);
+            background-color: aquamarine;
+            *padding: 5px;
+        }*/
+
+        /*#clock {
+            left: 95px;
+        }*/
+
+        #tooltip-container {
+            position: absolute;
+            background: #F5F4EB;
+            *box-shadow: 0 0 5px #999999;
+            *color: #333;
+            display: none;
+            font-size: 12px;
+            margin-left: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+            width: auto;
+            height: auto;
+            z-index: 10;
+            left: 0;
+            bottom: 0;
+            padding: 3px;
+        }
+
+        .allmodel {
+            height: 150px;
+            width: 150px;
+            border: 1px solid #999999;
+            float: left;
+            margin-right: 2px;
+        }
+
+        .legend2 {
+            *background-color: #fff;
+            *border: 1px solid #bbb;
+            width: 95px;
+            height: 400px;
+            margin-left: 5px;
+            padding-top: 5px;
+            float: left;
+        }
+
+        .trdlegend {
+            *background-color: #fff;
+            *border: 1px solid #bbb;
+            margin-left: 5px;
+            padding-top: 5px;
+            display: none;
+        }
+
+        img {
+            position: fixed;
+            z-index: 100;
+            top: 50%;
+            left: 50%;
+            margin: -100px 0 0 -100px;
+        }
+
+        .row-fluid {
+            position: relative;
+            left: 25%;
+            *border: 1px solid #bbb;
+            *background-color: #fff;
+            width: 750px;
+        }
+
+        .left-fluid {
+            position: absolute;
+            *border: 1px solid #bbb;
+            *background-color: #fff;
+            width: 225px;
+            left: 6%;
+        }
+
+        .footer {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            padding: 10px;
+            background-color: #efefef;
+            *  text-align: center;
+        }
+
+        /* Vertical Navigation Bar */
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            width: 225px;
+            background-color: #f1f1f1;
+        }
+
+        li a {
+            display: block;
+            color: #000;
+            padding: 8px 16px;
+            text-decoration: none;
+        }
+
+            li a.active {
+                background-color: #385647; /*#4CAF50;*/
+                color: white;
+            }
+
+            li a:hover:not(.active) {
+                background-color: #555;
+                color: white;
+            }
+    </style>
+
+    <script src="./js/jquery-1.10.2.min.js"></script>
+    <script src="./js/d3.v3.min.js"></script>
+    <script src="./js/d3.geo.projection.v0.min.js"></script>
+    <script src="./js/d3-axis.v1.min.js"></script>
+    <script src="./js/d3-legend.js"></script>
+    <script src="./js/queue.v1.min.js"></script>
+    <script src="./js/topojson.v1.min.js"></script>
+    <script src="./js/colorbrewer.v1.min.js"></script>
+    <script src="./js/FileSaver.min.js"></script>
+    <script src="./js/canvas-toBlob.js"></script>
+
+    <script>
+        var timeAttribute = 0;
+        var startyr, endyr;
+        var selectedItems = {
+            "state": "",
+            "rcp": "",
+            "model": "",
+            "time": "",
+            "indicatortype": "",
+            "indicatorname": "",
+            "trend": "clim"
+        };
+
+        $(document).ready(function () {
+            var indicators = [{
+                "categoryname": "temperature",
+                "name": "DTR",
+                "text": "Diurnal temparature range (DTR)",
+                "description": "DTR (°C)<br /> Daily temperature range (mean difference between maximum and minimum temperature in °C)",
+                "unit": "°C"
+            }, {
+                "categoryname": "temperature",
+                "name": "CSDI",
+                "text": "Cold spell duration indicator (CSDI)",
+                "description": "CSDI (days)<br /> Cold-spell duration index (number of days with at least 6 consecutive days with minimum temperature below 10th percentile, calculated for a 5-day window centred on each calendar day in the period 1971-2000)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "FD",
+                "text": "Frost days (FD)",
+                "description": "FD (days)<br /> Number of frost days (days with minimum temperature below 0°C)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "GSL",
+                "text": "Growing season length (GSL)",
+                "description": "GSL (days)<br /> Growing season length (days between the first occurrence of at least 6 consecutive days with mean temperature above 5°C and the first occurrence, after July 1st (NH) or January 1st (SH), of at least 6 consecutive days with mean temperature below 5°C)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "ID",
+                "text": "Ice days (ID)",
+                "description": "ID (days)<br /> Number of icing days (days with maximum temperature below 0°C)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "SU",
+                "text": "Summer days (SU)",
+                "description": "SU (days)<br /> Number of summer days (days with maximum temperature above 25°C)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "TN10p",
+                "text": "Cool nights (TN10p)",
+                "description": "TN10p (% days)<br /> Number of days with minimum temperature below 10th percentile, calculated for a 5-day window centred on each calendar day in the period 1981-2010)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "TN90p",
+                "text": "Warm nights (TN90p)",
+                "description": "TN90p (% days)<br /> Number of days with minimum temperature above 90th percentile, calculated for a 5-day window centred on each calendar day in the period 1981-2010)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "TNn",
+                "text": "Min Tmin (TNn)",
+                "description": "TNn (°C)<br /> Minimum value of daily minimum temperature in °C",
+                "unit": "°C"
+            }, {
+                "categoryname": "temperature",
+                "name": "TNx",
+                "text": "Max Tmin (TNx)",
+                "description": "TNx (°C)<br /> Maximum value of daily minimum temperature in °C",
+                "unit": "°C"
+            }, {
+                "categoryname": "temperature",
+                "name": "TR",
+                "text": "Tropical nights (TR)",
+                "description": "TR (days)<br /> Number of tropical nights (days with minimum temperature above 20°C)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "TX10p",
+                "text": "Cool days (TX10p)",
+                "description": "TX10p (% days)<br /> Number of days with maximum temperature below 10th percentile, calculated for a 5-day window centred on each calendar day in the period 1981-2010)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "TX90p",
+                "text": "Warm days (TX90p)",
+                "description": "TX90p (% days)<br /> Number of days with maximum temperature above 90th percentile, calculated for a 5-day window centred on each calendar day in the period 1981-2010)",
+                "unit": "days"
+            }, {
+                "categoryname": "temperature",
+                "name": "TXn",
+                "text": "Min Tmax (TXn)",
+                "description": "TXn (°C)<br /> Minimum value of daily maximum temperature in °C",
+                "unit": "°C"
+            }, {
+                "categoryname": "temperature",
+                "name": "TXx",
+                "text": "Max Tmax (TXx)",
+                "description": "TXx (°C)<br /> Maximum value of daily maximum temperature in °C",
+                "unit": "°C"
+            }, {
+                "categoryname": "temperature",
+                "name": "WSDI",
+                "text": "Warm spell duration indicator (WSDI)",
+                "description": "WSDI (days)<br /> Warm-spell duration index (number of days with at least 6 consecutive days with maximum temperature above 90th percentile, calculated for a 5-day window centred on each calendar day in the period 1981-2010)",
+                "unit": "days"
+            }, {
+                "categoryname": "precipitation",
+                "name": "PRCPTOT",
+                "text": "Annual total wet-day precipitation (PRCPTOT)",
+                "description": "PRCPTOT (mm)<br /> Total precipitation in wet days, defined as days with precipitation greater or equal to 1mm",
+                "unit": "mm"
+            }, {
+                "categoryname": "precipitation",
+                "name": "CDD",
+                "text": "Consecutive dry days (CDD)",
+                "description": "CDD (days)<br /> Consecutive dry days (maximum number of consecutive days with precipitation below 1mm)",
+                "unit": "days"
+            }, {
+                "categoryname": "precipitation",
+                "name": "CWD",
+                "text": "Consecutive wet days (CWD)",
+                "description": "CWD (days)<br /> Consecutive wet days (maximum number of consecutive days with precipitation greater or equal to 1mm)",
+                "unit": "days"
+            }, {
+                "categoryname": "precipitation",
+                "name": "R10mm",
+                "text": "Number of heavy precipitation days (R10mm)",
+                "description": "R10mm (days)<br /> Number of days with precipitation greater or equal to 10mm",
+                "unit": "days"
+            }, {
+                "categoryname": "precipitation",
+                "name": "R20mm",
+                "text": "Number of very heavy precipitation days (R20mm)",
+                "description": "R20mm (days)<br /> Number of days with precipitation greater or equal to 20mm",
+                "unit": "days"
+            }, {
+                "categoryname": "precipitation",
+                "name": "R95p",
+                "text": "Very wet days (R95p)",
+                "description": "R95p (mm)<br /> Annual total precipitation due to events with precipitation higher than 95th percentile of the reference period",
+                "unit": "percentage"
+            }, {
+                "categoryname": "precipitation",
+                "name": "R99p",
+                "text": "Extremely wet days (R99p)",
+                "description": "R99p (mm)<br /> Annual total precipitation due to events with precipitation higher than 99th percentile of the reference period",
+                "unit": "percentage"
+            }, {
+                "categoryname": "precipitation",
+                "name": "RX1DAY",
+                "text": "Max 1-day precipitation amount (Rx1day)",
+                "description": "RX1DAY (mm)<br /> Maximum 1-day precipitation",
+                "unit": "mm/day"
+            }, {
+                "categoryname": "precipitation",
+                "name": "RX5DAY",
+                "text": "Max 5-day precipitation amount (Rx5day)",
+                "description": "RX5DAY (mm)<br /> Maximum consecutive 5-day precipitation",
+                "unit": "mm/5day"
+            }, {
+                "categoryname": "precipitation",
+                "name": "SDII",
+                "text": "Simple daily intensity index (SDII)",
+                "description": "SDII (mm/day)<br /> Simple daily intensity index (annual precipitation divided by the number of wet days, defined as days with precipitation greater or equal to 1mm, in the year)",
+                "unit": "mm/day"
+            }];
+
+            function clearIndicatorNames() {
+                $('#indicator_name_select')
+                    .find('option')
+                    .remove()
+                    .end();
+            }
+
+            function populateIndicatorNameDropDown(category) {
+                clearIndicatorNames();
+                if (category) {
+                    var result = $.grep(indicators, function (e) {
+                        return e.categoryname == category;
+                    });
+
+                    if (result.length) {
+
+                        $('#indicator_name_select').append(
+                            $('<option></option>').val("").html("Please select...")
+                        );
+
+                        $.each(result, function (index, text) {
+                            $('#indicator_name_select').append(
+                                $('<option></option>').val(text.name).html(text.text).attr("title", text.description.replace('<br /> ', '\n'))
+                            );
+                        });
+                    }
+
+                }
+            }
+
+            $("#indicator_type_select").change(function () {
+                selectedItems.indicatortype = this.value;
+                populateIndicatorNameDropDown(selectedItems.indicatortype);
+            });
+            $("#state_select").change(function () {
+                selectedItems.state = this.value;
+            });
+            $('#rcp_select').change(function () {
+                selectedItems.rcp = this.value;
+            });
+            $('#model_select').change(function () {
+                selectedItems.model = this.value;
+            });
+            $("#time_select").change(function () {
+                selectedItems.time = this.value;
+                if (selectedItems.time == "short") { startyr = 1981; endyr = 2010; timeAttribute = 31; }
+                else if (selectedItems.time == "near") { startyr = 2011; endyr = 2040; timeAttribute = 61; }
+                else if (selectedItems.time == "medium") { startyr = 2041; endyr = 2070; timeAttribute = 91; }
+                else if (selectedItems.time == "long") { startyr = 2071; endyr = 2100; timeAttribute = 121; }
+            });
+            $('#trend_select').change(function () {
+                selectedItems.trend = this.value;
+                if (selectedItems.trend == 'clim')
+                    document.getElementById('btnplay').style.display = 'block';
+                else
+                    document.getElementById('btnplay').style.display = 'none';
+
+                if (selectedItems.trend == 'delta')
+                    document.getElementById('lbldelta').style.display = 'inline';
+                else
+                    document.getElementById('lbldelta').style.display = 'none';
+
+            });
+
+            function editheader(indname) {
+
+                if (indname) {
+                    var result = $.grep(indicators, function (e) {
+                        return e.name == indname;
+                    });
+
+                    if (result.length) {
+                        $.each(result, function (index, text) {
+                            $("#header h4").html(text.description);
+                        });
+                    }
+                }
+            }
+            $("#indicator_name_select").change(function () {
+                selectedItems.indicatorname = this.value;
+                editheader(selectedItems.indicatorname);
+            });
+            $("#show").click(function () {
+                loadLayer(selectedItems.state, selectedItems.model, selectedItems.time, selectedItems.indicatortype, selectedItems.indicatorname, selectedItems.trend, selectedItems.rcp);
+            });
+
+        });
+
+        function loadLayer(state, model, time, indicatortype, indicatorname, trend, rcp) {
+            if ((!state || !model || !time || !indicatortype || !indicatorname || !trend || !rcp)) {
+                return;
+            }
+
+            d3.select("#divlegend").select("svg").remove();
+            d3.select("svg").selectAll("*").remove()
+
+            var gridfile = './NEX_State_grid/S_' + state + '.json';
+            var distfile = './NEX_District_map/S_' + state + '.json';
+
+            document.getElementById('clockload').style.display = 'block';
+            document.getElementById('trdimg').style.display = 'none';
+            document.getElementById('lbldelta').style.display = 'none';
+
+            if (trend == "clim") {
+                var dataname;
+                if (model == 'GFDL-CM3')
+                    dataname = './NEX_Climdex_data/' + model + '/' + rcp + '/' + indicatorname.toLowerCase() + "ETCCDI" + '_yr_' + model + '_' + rcp + '_r1i1p1_1950-2095_' + state + '.txt';
+                else
+                    dataname = './NEX_Climdex_data/' + model + '/' + rcp + '/' + indicatorname.toLowerCase() + "ETCCDI" + '_yr_' + model + '_' + rcp + '_r1i1p1_1950-2099_' + state + '.txt';
+
+                queue()
+                     .defer(d3.json, gridfile)
+                     .defer(d3.json, distfile)
+                     .defer(d3.csv, dataname)
+                     .await(loadgridndata);
+                animateMap();
+            } else if (trend == 'trend') {
+                var trendfile = './NEX_Climdex_trend/' + model + '/' + rcp + '/' + indicatorname.toLowerCase() + "ETCCDI" + '_yr_' + model + '_' + rcp + '_' + startyr + '-' + endyr + '_trend_' + state + '.txt';
+
+                queue()
+                     .defer(d3.json, gridfile)
+                     .defer(d3.json, distfile)
+                     .defer(d3.csv, trendfile)
+                     .await(loadtrend);
+            }
+            else if (trend == 'delta') {
+                var basefile = './NEX_Climdex_mean/' + rcp + '/' + indicatorname.toLowerCase() + "ETCCDI" + '_yr_' + rcp + '_1981-2010_mean_' + state + '.txt';
+                var deltafile = './NEX_Climdex_mean/' + rcp + '/' + indicatorname.toLowerCase() + "ETCCDI" + '_yr_' + rcp + '_' + startyr + '-' + endyr + '_mean_' + state + '.txt';
+
+                document.getElementById('lbldelta').style.display = 'inline';
+
+                queue()
+                     .defer(d3.json, gridfile)
+                     .defer(d3.json, distfile)
+                     .defer(d3.csv, basefile)
+                     .defer(d3.csv, deltafile)
+                     .await(loaddelta);
+            }
+        }
+
+        function initiategrid(stategrid, distgrid) {
+
+            d3.select("svg").selectAll("*").remove();
+            d3.select("#map").select("svg").remove();
+            $('#map').html('');
+            svg = d3.select("#map").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("style", 'margin-top:5px;');
+
+
+            //********************** District Grid start here **************************
+            distrproject = d3.geo.equirectangular()
+              .scale(1)
+              .translate([0, 0]);
+
+            distpath = d3.geo.path().projection(distrproject);
+            districtobj = getdistgrid(distgrid);
+
+            var districtmap = topojson.feature(distgrid, districtobj);
+            var b = distpath.bounds(districtmap),
+                s = 1 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+                t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+
+            distrproject
+                .scale(s)
+                .translate(t);
+
+            //********************** Sate Grid start here **************************
+            gridproject = d3.geo.equirectangular()
+              .scale(1)
+              .translate([0, 0]);
+
+            gridpath = d3.geo.path().projection(gridproject);
+            gridobj = getsategrid(stategrid);
+
+            var gridmap = topojson.feature(stategrid, gridobj);
+
+            var b = gridpath.bounds(gridmap),
+                s = 1 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+                t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+
+            gridproject
+                .scale(s)
+                .translate(t);
+        }
+        function loadtrend(error, stategrid, distgrid, trenddata) {
+
+            initiategrid(stategrid, distgrid);
+            var mpmap = gridobj.geometries;
+            for (var i in mpmap) {
+                for (var j in trenddata) {
+                    if (mpmap[i].properties.NexGridID2 == trenddata[j].NexGRIDID2) {
+                        for (var k in trenddata[i]) {
+                            if (k == 'trend' || k == 'tau' || k == 'sig') {
+                                mpmap[i].properties[k] = Number(trenddata[j][k])
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // ***************** Adding district Map *********************
+            svg.selectAll(".district").remove;
+            svg.selectAll(".district")
+                .data(topojson.feature(distgrid, districtobj).features)
+                .enter().append("path")
+                .attr("class", "district")
+                .attr("id", function (d) { return d.properties.Dist_2011; }, true)
+                .attr("d", distpath)
+
+            d3.selectAll('.district')
+                .attr('fill-opacity', function (d) {
+                    return 0.01;
+                });
+
+            // ***************** Adding State Map *********************
+            svg.selectAll(".country").remove;
+            svg.selectAll(".country")
+              .data(topojson.feature(stategrid, gridobj).features)
+              .enter().append("path")
+              .attr("class", "country")
+              .attr("id", function (d) { return d.properties.NexGridID2; }, true)
+              .attr("d", gridpath)
+              .on("mouseover", function (d) {
+                  $("#tooltip-container").show();
+                  loadWarning(d);
+              })
+              .on("mouseout", function () {
+                  $("#tooltip-container").hide();
+              });
+
+            var dataRange = getDataRange();
+            var color = d3.scale.quantize()
+              .domain([dataRange[0], dataRange[1]])
+              .range(colorbrewer.RdYlBu[11]);
+
+            d3.selectAll('.country')
+                    .style('fill', function (d) {
+
+                        var tau = Number(d.properties.tau);
+                        var sig = Number(d.properties.sig);
+                        var rtncolor;
+                        if (isNaN(tau))
+                            rtncolor = '#808080';
+                        else if (tau == 0)
+                            rtncolor = '#4DC9FF';
+                        else if (tau > 0) {
+                            if ((1 - sig) * 100 >= 95)
+                                rtncolor = '#267300';
+                            else
+                                rtncolor = '#C4D79B';
+                        }
+                        else if (tau < 0) {
+                            if ((1 - sig) * 100 >= 95)
+                                rtncolor = '#FF0000';
+                            else
+                                rtncolor = '#FFCCCC';
+                        }
+                        return rtncolor;
+                    });
+
+            // ***************** Adding Lable on Map *********************
+            svg.selectAll(".label").remove;
+            svg.selectAll(".label")
+                .data(topojson.feature(distgrid, districtobj).features)
+                .enter().append("text")
+                .attr("transform", function (d) { return "translate(" + distpath.centroid(d) + ")"; })
+                .attr("font-size", "6pt")
+                .text(function (d) { return d.properties.Dist_2011; });
+
+            var rect = document.getElementById('divlegend').getBoundingClientRect();
+            console.log(rect.top, rect.right, rect.bottom, rect.left, rect.width, rect.height);
+            //console.log(document.getElementById('trdimg').style.top);
+
+            document.getElementById('trdimg').style.position = "fixed";
+            document.getElementById('trdimg').style.top = rect.top + 100 + 'px'; //or whatever 
+            document.getElementById('trdimg').style.left = rect.left - 3 + 'px'; // or whatever
+            document.getElementById('trdimg').style.display = 'block';
+
+            document.getElementById('clockload').style.display = 'none';
+
+        }
+        function loaddelta(error, stategrid, distgrid, basedata, deltadata) {
+
+            initiategrid(stategrid, distgrid);
+            var mpmap = gridobj.geometries;
+            var min = Infinity, max = -Infinity, base, delt, byl = 0;
+            var negmin = Infinity, negmax = -Infinity, posmin = Infinity, posmax = -Infinity;
+            for (var i in mpmap) {
+                for (var j in basedata) {
+                    if (mpmap[i].properties.NexGridID2 == basedata[j].NexGRIDID2) {
+                        for (var k in basedata[i]) {
+                            if (k == selectedItems.model) {
+                                mpmap[i].properties['baseline'] = Number(basedata[j][k])
+                                base = Number(basedata[j][k]);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                for (var j in deltadata) {
+                    if (mpmap[i].properties.NexGridID2 == deltadata[j].NexGRIDID2) {
+                        for (var k in deltadata[i]) {
+                            if (k == selectedItems.model) {
+                                mpmap[i].properties['delta'] = Number(deltadata[j][k])
+                                delt = Number(deltadata[j][k]);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                //var bsdl = base - delt;
+                var bsdl = Number((delt - base).toFixed(1));
+                if (bsdl < 0) {
+                    if (negmin > bsdl)
+                        negmin = bsdl;
+                    if (negmax < bsdl)
+                        negmax = bsdl;
+                } else if (bsdl > 0) {
+                    if (posmin > bsdl)
+                        posmin = bsdl;
+                    if (posmax < bsdl)
+                        posmax = bsdl;
+                } else byl = 1;
+            }
+
+            console.log([negmin, negmax, posmin, posmax]);
+
+            // ***************** Adding district Map *********************
+            svg.selectAll(".district").remove;
+            svg.selectAll(".district")
+                .data(topojson.feature(distgrid, districtobj).features)
+                .enter().append("path")
+                .attr("class", "district")
+                .attr("id", function (d) { return d.properties.Dist_2011; }, true)
+                .attr("d", distpath)
+
+            d3.selectAll('.district')
+                .attr('fill-opacity', function (d) {
+                    return 0.01;
+                });
+
+            // ***************** Adding State Map *********************
+            svg.selectAll(".country").remove;
+            svg.selectAll(".country")
+              .data(topojson.feature(stategrid, gridobj).features)
+              .enter().append("path")
+              .attr("class", "country")
+              .attr("id", function (d) { return d.properties.NexGridID2; }, true)
+              .attr("d", gridpath)
+              .on("mouseover", function (d) {
+                  $("#tooltip-container").show();
+                  loadWarning(d);
+              })
+              .on("mouseout", function () {
+                  $("#tooltip-container").hide();
+              });
+
+            //var color = d3.scale.quantize()
+            //  .domain([min, max])
+            //  .range(colorbrewer.RdYlBu[11]);
+
+
+            //25.25 % 1
+            //0.25
+
+            //25 % 1
+            //0
+
+            //(25.25 % 1).toString().length
+            //4
+
+            //(25.25 % 1)
+            //0.25
+
+            //(25.00 % 1)
+            //0
+
+            //// Selecting first 3 rows
+            //["#084594", "#2171b5", "#4292c6", "#6baed6", "#9ecae1"].slice(0, 3)
+
+            //console.log([negmin, negmax])
+            //console.log([posmin, posmax])
+
+            var bluecolor, orangecolor, yellowcolor = d3.scale.quantize().domain([0]).range(['#ffff00']);
+            if (selectedItems.indicatortype == 'temperature') {
+                bluecolor = d3.scale.quantize().domain([negmin, negmax]).range(["#084594", "#2171b5", "#4292c6", "#6baed6", "#9ecae1"]);
+                orangecolor = d3.scale.quantize().domain([posmin, posmax]).range(["#fdae6b", "#fd8d3c", "#f16913", "#d94801", "#8c2d04"]);
+            } else {
+                orangecolor = d3.scale.quantize().domain([negmin, negmax]).range(["#8c2d04", "#d94801", "#f16913", "#fd8d3c", "#fdae6b"]);
+                bluecolor = d3.scale.quantize().domain([posmin, posmax]).range(["#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#084594"]);
+            }
+
+            //var negmin = Infinity, negmax = -Infinity, posmin = Infinity, posmax = -Infinity;
+            var legendtype = null, blnoclr = 0, ornoclr = 0;
+            if (negmin == Infinity) {
+                console.log('negmin');
+                if (selectedItems.indicatortype == 'temperature')
+                    legendtype = 'orange';
+                else
+                    legendtype = 'blue';
+
+                if (posmax == posmin) {
+                    if (selectedItems.indicatortype == 'temperature') 
+                        orangecolor = d3.scale.quantize().domain([posmin]).range(["#8c2d04"]);
+                    else 
+                        bluecolor = d3.scale.quantize().domain([posmin]).range(["#084594"]);
+                }
+                else {
+                    //var sign = number > 0 ? 1 : number == 0 ? 0 : -1;
+                    var diff = (posmax - posmin) < 0 ? (posmax - posmin) * -1 : (posmax - posmin);
+                    diff = diff < 1 ? diff * 10 : diff;
+                    console.log(diff);
+                    if (diff < 5 && diff > 0.5) {
+                        if (selectedItems.indicatortype == 'temperature') {
+                            ornoclr = diff;
+                            orangecolor = d3.scale.quantize().domain([posmin, posmax]).range(["#fdae6b", "#fd8d3c", "#f16913", "#d94801", "#8c2d04"].slice(5 - diff, 5));
+                        }
+                        else {
+                            blnoclr = diff;
+                            bluecolor = d3.scale.quantize().domain([posmin, posmax]).range(["#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#084594"].slice(5 - diff, 5));
+                        }
+                    }
+                }
+            } else if (posmin == Infinity) {
+                console.log('posmin');
+                if (selectedItems.indicatortype == 'temperature')
+                    legendtype = 'blue';
+                else
+                    legendtype = 'orange';
+
+                if (negmax == negmin) {
+                    if (selectedItems.indicatortype == 'temperature') 
+                        bluecolor = d3.scale.quantize().domain([negmin]).range(["#084594"]);
+                    else 
+                        orangecolor = d3.scale.quantize().domain([negmin]).range(["#8c2d04"]);
+                }
+                else {
+                    //var sign = number > 0 ? 1 : number == 0 ? 0 : -1;
+                    var diff = (negmax - negmin) < 0 ? (negmax - negmin) * -1 : (negmax - negmin);
+                    diff = diff < 1 ? diff * 10 : diff;
+
+                    //console.log(diff);
+
+                    if (diff < 5 && diff > 0.5) {
+                        if (selectedItems.indicatortype == 'temperature') {
+                            blnoclr = diff;
+                            bluecolor = d3.scale.quantize().domain([negmin, negmax]).range(["#084594", "#2171b5", "#4292c6", "#6baed6", "#9ecae1"].slice(0, diff));
+                        }
+                        else {
+                            ornoclr = diff;
+                            orangecolor = d3.scale.quantize().domain([negmin, negmax]).range(["#8c2d04", "#d94801", "#f16913", "#fd8d3c", "#fdae6b"].slice(0, diff));
+                        }
+                    }
+                }
+            } else {
+                if (negmax == negmin) {
+                    if (selectedItems.indicatortype == 'temperature')
+                        bluecolor = d3.scale.quantize().domain([negmin]).range(["#084594"]);
+                    else
+                        orangecolor = d3.scale.quantize().domain([negmin]).range(["#8c2d04"]);
+                }
+                else {
+
+                    //var sign = number > 0 ? 1 : number == 0 ? 0 : -1;
+                    var negdiff = (negmax - negmin) < 0 ? ((negmax - negmin) * -1) : (negmax - negmin);
+                    negdiff = negdiff < 1 ? negdiff * 10 : negdiff;
+                    negdiff = negdiff == 0 ? 1 : negdiff;
+
+                    if (negdiff < 5 && negdiff > 0.5) {
+                        if (selectedItems.indicatortype == 'temperature') {
+                            blnoclr = negdiff;
+                            bluecolor = d3.scale.quantize().domain([negmin, negmax]).range(["#084594", "#2171b5", "#4292c6", "#6baed6", "#9ecae1"].slice(0, negdiff));
+                        }
+                        else {
+                            ornoclr = negdiff;
+                            orangecolor = d3.scale.quantize().domain([negmin, negmax]).range(["#8c2d04", "#d94801", "#f16913", "#fd8d3c", "#fdae6b"].slice(0, negdiff));
+                        }
+                    }
+                }
+
+                if (posmax == posmin) {
+                    if (selectedItems.indicatortype == 'temperature')
+                        orangecolor = d3.scale.quantize().domain([posmin]).range(["#8c2d04"]);
+                    else
+                        bluecolor = d3.scale.quantize().domain([posmin]).range(["#084594"]);
+                }
+                else {
+                    var posdiff = (posmax - posmin) < 0 ? (posmax - posmin) * -1 : (posmax - posmin);
+                    posdiff = posdiff < 1 ? posdiff * 10 : posdiff;
+                    //posdiff = posdiff == 0 ? 1 : posdiff;
+
+                    if (posdiff < 5 && posdiff > 0.5) {
+                        if (selectedItems.indicatortype == 'temperature') {
+                            ornoclr = posdiff;
+                            orangecolor = d3.scale.quantize().domain([posmin, posmax]).range(["#fdae6b", "#fd8d3c", "#f16913", "#d94801", "#8c2d04"].slice(5 - posdiff, 5));
+                        }
+                        else {
+                            blnoclr = posdiff;
+                            bluecolor = d3.scale.quantize().domain([posmin, posmax]).range(["#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#084594"].slice(5 - posdiff, 5));
+                        }
+                    }
+                }
+            }
+
+            //blue
+            //["#9ecae1","#6baed6","#4292c6","#2171b5","#084594"]
+            // Blues rearrange
+            //["#084594","#2171b5","#4292c6","#6baed6","#9ecae1"]
+
+            //Orange
+            //["#fdae6b", "#fd8d3c", "#f16913", "#d94801", "#8c2d04"]
+            // rearanged
+            //["#8c2d04", "#d94801", "#f16913", "#fd8d3c", "#fdae6b"]
+
+            //console.log(bluecolor.range())
+            //console.log(orangecolor.range())
+
+            //console.log(bluecolor.domain())
+            //console.log(orangecolor.domain())
+
+            d3.selectAll('.country')
+                    .style('fill', function (d) {
+                        //var rsdel = Number(d.properties.baseline) - Number(d.properties.delta);
+                        var rsdel = Number((d.properties.delta - d.properties.baseline).toFixed(1));
+                        var clr='';
+                        if (selectedItems.indicatortype == 'temperature') {
+                            if (rsdel < 0)
+                                clr = bluecolor.domain()[0] == bluecolor.domain()[1] ? bluecolor.range()[0] : bluecolor(rsdel);
+                            else if (rsdel > 0)
+                                clr = orangecolor.domain()[0] == orangecolor.domain()[1] ? orangecolor.range()[0] : orangecolor(rsdel);
+                            else
+                                clr = '#ffff00';
+                        } else {
+
+                            if (rsdel < 0)
+                                clr = orangecolor.domain()[0] == orangecolor.domain()[1] ? orangecolor.range()[0] : orangecolor(rsdel);
+                            else if (rsdel > 0)
+                                clr = bluecolor.domain()[0] == bluecolor.domain()[1] ? bluecolor.range()[0] : bluecolor(rsdel);
+                            else
+                                clr = '#ffff00';
+                        }
+                        //console.log(rsdel + ' : ' + clr);
+                        return clr;
+                    });
+
+            // ***************** Adding Lable on Map *********************
+            svg.selectAll(".label").remove;
+            svg.selectAll(".label")
+                .data(topojson.feature(distgrid, districtobj).features)
+                .enter().append("text")
+                .attr("transform", function (d) { return "translate(" + distpath.centroid(d) + ")"; })
+                .attr("font-size", "6pt")
+                .text(function (d) { return d.properties.Dist_2011; });
+
+            //bluecolor = d3.scale.quantize().domain([min, max]).range(colorbrewer.Blues[5]);
+            //orangecolor = d3.scale.quantize().domain([min, max]).range(colorbrewer.Oranges[5]);
+            //var legendtype = null, blnoclr = 0, ornoclr = 0;
+            if (selectedItems.indicatortype == 'temperature')
+                createDeltaTempLegend(bluecolor, yellowcolor, orangecolor, legendtype);
+            else
+                createDeltaLegend(bluecolor, yellowcolor, orangecolor, legendtype);
+            //createLegend(color);
+            document.getElementById('clockload').style.display = 'none';
+        }
+        // ========= Save Map =================
+        d3.select('#savemap').on('click', function () {
+            var svgString = getSVGString(svg.node());
+            svgString2Image(svgString, 2 * width, 2 * height, 'png', save);
+
+            function save(dataBlob, filesize) {
+                saveAs(dataBlob, 'sampleiamge.png');
+            }
+        });
+
+        function getSVGString(svgNode) {
+            svgNode.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
+            var cssStyleText = getCSSStyles(svgNode);
+            appendCSS(cssStyleText, svgNode);
+
+            var serializer = new XMLSerializer();
+            var svgString = serializer.serializeToString(svgNode);
+            svgString = svgString.replace(/(\w+)?:?xlink=/g, 'xmlns:xlink=');
+            svgString = svgString.replace(/NS\d+:href/g, 'xlink:href');
+
+            return svgString;
+
+            function getCSSStyles(parentElement) {
+                var selectorTextArr = [];
+
+                selectorTextArr.push('#' + parentElement.id);
+                for (var c = 0; c < parentElement.classList.length; c++)
+                    if (!contains('.' + parentElement.classList[c], selectorTextArr))
+                        selectorTextArr.push('.' + parentElement.classList[c]);
+
+                var nodes = parentElement.getElementsByTagName("*");
+                for (var i = 0; i < nodes.length; i++) {
+                    var id = nodes[i].id;
+                    if (!contains('#' + id, selectorTextArr))
+                        selectorTextArr.push('#' + id);
+
+                    var classes = nodes[i].classList;
+                    for (var c = 0; c < classes.length; c++)
+                        if (!contains('.' + classes[c], selectorTextArr))
+                            selectorTextArr.push('.' + classes[c]);
+                }
+
+                var extractedCSSText = "";
+                for (var i = 0; i < document.styleSheets.length; i++) {
+                    var s = document.styleSheets[i];
+
+                    try {
+                        if (!s.cssRules) continue;
+                    } catch (e) {
+                        if (e.name !== 'SecurityError') throw e;
+                        continue;
+                    }
+
+                    var cssRules = s.cssRules;
+                    for (var r = 0; r < cssRules.length; r++) {
+                        if (contains(cssRules[r].selectorText, selectorTextArr))
+                            extractedCSSText += cssRules[r].cssText;
+                    }
+                }
+
+
+                return extractedCSSText;
+
+                function contains(str, arr) {
+                    return arr.indexOf(str) === -1 ? false : true;
+                }
+            }
+
+            function appendCSS(cssText, element) {
+                var styleElement = document.createElement("style");
+                styleElement.setAttribute("type", "text/css");
+                styleElement.innerHTML = cssText;
+                var refNode = element.hasChildNodes() ? element.children[0] : null;
+                element.insertBefore(styleElement, refNode);
+            }
+        }
+
+        function svgString2Image(svgString, width, height, format, callback) {
+            var format = format ? format : 'png';
+
+            var imgsrc = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
+
+            var canvas = document.createElement("canvas");
+            var context = canvas.getContext("2d");
+
+            canvas.width = width;
+            canvas.height = height;
+
+            var image = new Image();
+            image.onload = function () {
+                context.clearRect(0, 0, width, height);
+                context.drawImage(image, 0, 0, width, height);
+
+                canvas.toBlob(function (blob) {
+                    var filesize = Math.round(blob.length / 1024) + ' KB';
+                    if (callback) callback(blob, filesize);
+                });
+
+
+            };
+
+            image.src = imgsrc;
+        }
+
+        var districtobj, gridobj, distpath, distrproject, gridpath, gridproject, svgleg, width = 630, height = 390, attributeArray = [], currentAttribute = 0, playing = false;
+
+        function getsategrid(stategrid) {
+
+            if (selectedItems.state == '01')
+                return stategrid.objects.S_01_Grids;
+            else if (selectedItems.state == '02')
+                return stategrid.objects.S_02_Grids;
+            else if (selectedItems.state == '03')
+                return stategrid.objects.S_03_Grids;
+            else if (selectedItems.state == '04')
+                return stategrid.objects.S_04_Grids;
+            else if (selectedItems.state == '05')
+                return stategrid.objects.S_05_Grids;
+            else if (selectedItems.state == '06')
+                return stategrid.objects.S_06_Grids;
+            else if (selectedItems.state == '07')
+                return stategrid.objects.S_07_Grids;
+            else if (selectedItems.state == '08')
+                return stategrid.objects.S_08_Grids;
+            else if (selectedItems.state == '09')
+                return stategrid.objects.S_09_Grids;
+            else if (selectedItems.state == '10')
+                return stategrid.objects.S_10_Grids;
+            else if (selectedItems.state == '11')
+                return stategrid.objects.S_11_Grids;
+            else if (selectedItems.state == '12')
+                return stategrid.objects.S_12_Grids;
+            else if (selectedItems.state == '13')
+                return stategrid.objects.S_13_Grids;
+            else if (selectedItems.state == '14')
+                return stategrid.objects.S_14_Grids;
+            else if (selectedItems.state == '15')
+                return stategrid.objects.S_15_Grids;
+            else if (selectedItems.state == '16')
+                return stategrid.objects.S_16_Grids;
+            else if (selectedItems.state == '17')
+                return stategrid.objects.S_17_Grids;
+            else if (selectedItems.state == '18')
+                return stategrid.objects.S_18_Grids;
+            else if (selectedItems.state == '19')
+                return stategrid.objects.S_19_Grids;
+            else if (selectedItems.state == '20')
+                return stategrid.objects.S_20_Grids;
+            else if (selectedItems.state == '21')
+                return stategrid.objects.S_21_Grids;
+            else if (selectedItems.state == '22')
+                return stategrid.objects.S_22_Grids;
+            else if (selectedItems.state == '23')
+                return stategrid.objects.S_23_Grids;
+            else if (selectedItems.state == '24')
+                return stategrid.objects.S_24_Grids;
+            else if (selectedItems.state == '25')
+                return stategrid.objects.S_25_Grids;
+            else if (selectedItems.state == '26')
+                return stategrid.objects.S_26_Grids;
+            else if (selectedItems.state == '27')
+                return stategrid.objects.S_27_Grids;
+            else if (selectedItems.state == '28')
+                return stategrid.objects.S_28_Grids;
+            else if (selectedItems.state == '29')
+                return stategrid.objects.S_29_Grids;
+            else if (selectedItems.state == '30')
+                return stategrid.objects.S_30_Grids;
+            else if (selectedItems.state == '31')
+                return stategrid.objects.S_31_Grids;
+            else if (selectedItems.state == '32')
+                return stategrid.objects.S_32_Grids;
+            else if (selectedItems.state == '33')
+                return stategrid.objects.S_33_Grids;
+            else if (selectedItems.state == '34')
+                return stategrid.objects.S_34_Grids;
+            else if (selectedItems.state == '35')
+                return stategrid.objects.S_35_Grids;
+            else if (selectedItems.state == '36')
+                return stategrid.objects.S_36_Grids;
+            else return null;
+        }
+
+        function getdistgrid(distgrid) {
+
+            if (selectedItems.state == '01')
+                return distgrid.objects.S_01;
+            else if (selectedItems.state == '02')
+                return distgrid.objects.S_02;
+            else if (selectedItems.state == '03')
+                return distgrid.objects.S_03;
+            else if (selectedItems.state == '04')
+                return distgrid.objects.S_04;
+            else if (selectedItems.state == '05')
+                return distgrid.objects.S_05;
+            else if (selectedItems.state == '06')
+                return distgrid.objects.S_06;
+            else if (selectedItems.state == '07')
+                return distgrid.objects.S_07;
+            else if (selectedItems.state == '08')
+                return distgrid.objects.S_08;
+            else if (selectedItems.state == '09')
+                return distgrid.objects.S_09;
+            else if (selectedItems.state == '10')
+                return distgrid.objects.S_10;
+            else if (selectedItems.state == '11')
+                return distgrid.objects.S_11;
+            else if (selectedItems.state == '12')
+                return distgrid.objects.S_12;
+            else if (selectedItems.state == '13')
+                return distgrid.objects.S_13;
+            else if (selectedItems.state == '14')
+                return distgrid.objects.S_14;
+            else if (selectedItems.state == '15')
+                return distgrid.objects.S_15;
+            else if (selectedItems.state == '16')
+                return distgrid.objects.S_16;
+            else if (selectedItems.state == '17')
+                return distgrid.objects.S_17;
+            else if (selectedItems.state == '18')
+                return distgrid.objects.S_18;
+            else if (selectedItems.state == '19')
+                return distgrid.objects.S_19;
+            else if (selectedItems.state == '20')
+                return distgrid.objects.S_20;
+            else if (selectedItems.state == '21')
+                return distgrid.objects.S_21;
+            else if (selectedItems.state == '22')
+                return distgrid.objects.S_22;
+            else if (selectedItems.state == '23')
+                return distgrid.objects.S_23;
+            else if (selectedItems.state == '24')
+                return distgrid.objects.S_24;
+            else if (selectedItems.state == '25')
+                return distgrid.objects.S_25;
+            else if (selectedItems.state == '26')
+                return distgrid.objects.S_26;
+            else if (selectedItems.state == '27')
+                return distgrid.objects.S_27;
+            else if (selectedItems.state == '28')
+                return distgrid.objects.S_28;
+            else if (selectedItems.state == '29')
+                return distgrid.objects.S_29;
+            else if (selectedItems.state == '30')
+                return distgrid.objects.S_30;
+            else if (selectedItems.state == '31')
+                return distgrid.objects.S_31;
+            else if (selectedItems.state == '32')
+                return distgrid.objects.S_32;
+            else if (selectedItems.state == '33')
+                return distgrid.objects.S_33;
+            else if (selectedItems.state == '34')
+                return distgrid.objects.S_34;
+            else if (selectedItems.state == '35')
+                return distgrid.objects.S_35;
+            else if (selectedItems.state == '36')
+                return distgrid.objects.S_36;
+        }
+
+        function loadgridndata(error, stategrid, distgrid, climdata) {
+
+            d3.select("#map").select("svg").remove();
+            $('#map').html('');
+            svg = d3.select("#map").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("style", 'margin-top:5px;');
+
+
+            //********************** District Grid start here **************************
+            distrproject = d3.geo.equirectangular()
+              .scale(1)
+              .translate([0, 0]);
+
+            distpath = d3.geo.path().projection(distrproject);
+
+            districtobj = getdistgrid(distgrid);
+
+            var districtmap = topojson.feature(distgrid, districtobj);
+
+            var b = distpath.bounds(districtmap),
+                s = 1 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+                t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+
+            distrproject
+                .scale(s)
+                .translate(t);
+
+            //********************** Sate Grid start here **************************
+            gridproject = d3.geo.equirectangular()
+              .scale(1)
+              .translate([0, 0]);
+
+            gridpath = d3.geo.path().projection(gridproject);
+            gridobj = getsategrid(stategrid);
+
+            var gridmap = topojson.feature(stategrid, gridobj);
+
+            var b = gridpath.bounds(gridmap),
+                s = 1 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+                t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+
+            gridproject
+                .scale(s)
+                .translate(t);
+
+            var mpmap = gridobj.geometries;
+
+            for (var i in mpmap) {
+                for (var j in climdata) {
+                    if (mpmap[i].properties.NexGridID2 == climdata[j].NexGRIDID2) {
+                        for (var k in climdata[i]) {
+                            if (k != 'NexGRIDID2') {
+                                if (attributeArray.indexOf(k) == -1) {
+                                    attributeArray.push(k);
+                                }
+                                mpmap[i].properties[k] = Number(climdata[j][k])
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            d3.select('#clock').html(attributeArray[currentAttribute]);
+            drawstatedistmap(stategrid, distgrid);
+
+        }
+
+        function drawstatedistmap(stategrid, distgrid) {
+            // ***************** Adding district Map *********************
+            svg.selectAll(".district").remove;
+            svg.selectAll(".district")
+                .data(topojson.feature(distgrid, districtobj).features)
+                .enter().append("path")
+                .attr("class", "district")
+                .attr("id", function (d) { return d.properties.Dist_2011; }, true)
+                .attr("d", distpath)
+
+            d3.selectAll('.district')
+                .attr('fill-opacity', function (d) {
+                    return 0.01;
+                });
+
+            // ***************** Adding State Map *********************
+            svg.selectAll(".country").remove;
+            svg.selectAll(".country")
+              .data(topojson.feature(stategrid, gridobj).features)
+              .enter().append("path")
+              .attr("class", "country")
+              .attr("id", function (d) { return d.properties.NexGridID2; }, true)
+              .attr("d", gridpath)
+              .on("mouseover", function (d) {
+                  $("#tooltip-container").show();
+                  loadWarning(d);
+              })
+              .on("mouseout", function () {
+                  $("#tooltip-container").hide();
+              });
+
+            var dataRange = getDataRange();
+            //var color = d3.scale.quantize()
+            //  .domain([dataRange[0], dataRange[1]])
+            //  .range(colorbrewer.RdYlBu[11]);
+
+            var color, orgclr = colorbrewer.RdYlBu[11], revclr = [];
+
+            var length = orgclr.length - 1;
+            for (; length > -1; length -= 1) {
+                revclr.push(orgclr[length]);
+                //orgclr.splice(length, 1);
+            }
+            //revclr.reverse();
+
+            if (selectedItems.indicatortype == 'temperature')
+                color = d3.scale.quantize().domain([dataRange[0], dataRange[1]]).range(revclr);
+            else
+                color = d3.scale.quantize().domain([dataRange[0], dataRange[1]]).range(orgclr);
+
+            d3.selectAll('.country')
+                    .style('fill', function (d) {
+                        return color(d.properties[attributeArray[currentAttribute]]);
+                    });
+
+            // ***************** Adding Lable on Map *********************
+            svg.selectAll(".label").remove;
+            svg.selectAll(".label")
+                .data(topojson.feature(distgrid, districtobj).features)
+                .enter().append("text")
+                .attr("transform", function (d) { return "translate(" + distpath.centroid(d) + ")"; })
+                .attr("font-size", "6pt")
+                .text(function (d) { return d.properties.Dist_2011; });
+
+            createLegend(color);
+            document.getElementById('clockload').style.display = 'none';
+        }
+        function createDeltaTempLegend(bluecolor, yellowcolor, orangecolor, legendtype) {
+
+            d3.select("#divlegend").selectAll("svg").remove();
+
+            if (selectedItems.indicatortype == 'temperature' && legendtype == 'blue') {
+                var svgleg1 = d3.select("#divlegend").append("svg").attr('height', 480).attr('id', 'svglegend1')
+
+                var colorLegend1 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(bluecolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg1.append("g")
+                  .call(colorLegend1);
+            }
+            else if (selectedItems.indicatortype == 'temperature' && legendtype == 'orange') {
+                var svgleg3 = d3.select("#divlegend").append("svg").attr('height', 480).attr('id', 'svglegend3')
+
+                var colorLegend3 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(orangecolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg3.append("g")
+                  .call(colorLegend3);
+            } else {
+
+                var svgleg1 = d3.select("#divlegend").append("svg").attr('height', 180).attr('id', 'svglegend1')
+
+                var colorLegend1 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(bluecolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg1.append("g")
+                  .call(colorLegend1);
+
+                //************************************************
+                var svgleg2 = d3.select("#divlegend").append("svg").attr('height', 40).attr('id', 'svglegend2')
+
+                var colorLegend2 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(yellowcolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg2.append("g")
+                  .call(colorLegend2);
+
+                //************************************************
+                var svgleg3 = d3.select("#divlegend").append("svg").attr('height', 200).attr('id', 'svglegend3')
+
+                var colorLegend3 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(orangecolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg3.append("g")
+                  .call(colorLegend3);
+            }
+        }
+
+        function createDeltaLegend(bluecolor, yellowcolor, orangecolor, legendtype) {
+
+            d3.select("#divlegend").selectAll("svg").remove();
+            if (legendtype == 'blue') {
+                var svgleg3 = d3.select("#divlegend").append("svg").attr('height', 480).attr('id', 'svglegend3')
+
+                var colorLegend3 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(bluecolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg3.append("g")
+                  .call(colorLegend3);
+            } else if (legendtype == 'orange') {
+                var svgleg1 = d3.select("#divlegend").append("svg").attr('height', 480).attr('id', 'svglegend1')
+
+                var colorLegend1 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(orangecolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg1.append("g")
+                  .call(colorLegend1);
+            } else {
+                var svgleg1 = d3.select("#divlegend").append("svg").attr('height', 180).attr('id', 'svglegend1')
+
+                var colorLegend1 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(orangecolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg1.append("g")
+                  .call(colorLegend1);
+
+                //************************************************
+                var svgleg2 = d3.select("#divlegend").append("svg").attr('height', 40).attr('id', 'svglegend2')
+
+                var colorLegend2 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(yellowcolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg2.append("g")
+                  .call(colorLegend2);
+
+                //************************************************
+                var svgleg3 = d3.select("#divlegend").append("svg").attr('height', 200).attr('id', 'svglegend3')
+
+                var colorLegend3 = d3.legend.color()
+                    .labelFormat(d3.format(".1f"))
+                    .scale(bluecolor)
+                    .shapeWidth(10)
+                    .shapeHeight(34)
+                    .labelOffset(5)
+                    .labelDelimiter('to');
+
+                svgleg3.append("g")
+                  .call(colorLegend3);
+            }
+        }
+
+        function createLegend(colorScale) {
+            //console.log(colorScale.range().reverse());
+            //console.log(colorScale.reverse());
+            //var revcolor = colorScale.range().reverse();
+            //if (selectedItems.indicatortype == 'temperature')
+            //    revcolor.reverse();
+
+            d3.select("#divlegend").select("svg").remove();
+            svgleg = d3.select("#divlegend").append("svg").attr('height', 480).attr('id', 'svglegend')
+
+            var colorLegend = d3.legend.color()
+                .labelFormat(d3.format(".1f"))
+                .scale(colorScale)
+                .shapeWidth(10)
+                .shapeHeight(34)
+                .labelOffset(5)
+                .labelDelimiter('-');
+
+            svgleg.append("g")
+              .call(colorLegend);
+
+        }
+        function sequenceMap() {
+
+            var dataRange = getDataRange();
+            //var color = d3.scale.quantize()
+            //  .domain([dataRange[0], dataRange[1]])
+            //  .range(colorbrewer.RdYlBu[11]);
+
+            var color;
+            if (selectedItems.indicatortype == 'temperature')
+                color = d3.scale.quantize().domain([dataRange[1], dataRange[0]]).range(colorbrewer.RdYlBu[11]);
+            else
+                color = d3.scale.quantize().domain([dataRange[0], dataRange[1]]).range(colorbrewer.RdYlBu[11]);
+
+            d3.selectAll('.country').transition()
+              .duration(750)
+                        .style('fill', function (d) {
+                            return color(d.properties[attributeArray[currentAttribute]]);
+                        })
+            createLegend(color);
+        }
+        function animateMap() {
+            currentAttribute = timeAttribute;
+            var timer;
+            d3.select('#play')
+              .on('click', function () {
+                  if (playing == false) {
+                      timer = setInterval(function () {
+                          if (currentAttribute < (timeAttribute + 29)) {
+                              currentAttribute += 1;
+                          } else {
+                              currentAttribute = timeAttribute;
+                          }
+
+                          sequenceMap();
+                          d3.select('#clock').html(attributeArray[currentAttribute]);
+                      }, 2000);
+
+                      d3.select(this).html('stop');
+                      playing = true;
+                  } else {
+                      clearInterval(timer);
+                      d3.select(this).html('play');
+                      playing = false;
+                  }
+              });
+        }
+
+
+        function getDataRange() {
+            var min = Infinity, max = -Infinity;
+            d3.selectAll('.country')
+              .each(function (d, i) {
+                  var currentValue = d.properties[attributeArray[currentAttribute]];
+                  if (currentValue <= min && currentValue != -99 && currentValue != 'undefined') {
+                      min = currentValue;
+                  }
+                  if (currentValue >= max && currentValue != -99 && currentValue != 'undefined') {
+                      max = currentValue;
+                  }
+              });
+            return [min, max];
+        }
+
+        
+        function loadWarning(d) {
+            var curr = $("#clock")[0].innerText;
+            var day = curr.charAt(0);
+            var html = "";
+            var tooltip = d3.select("#tooltip-container");
+            if (playing == false) {
+                if (selectedItems.trend == 'clim') {
+                    html += "<table><tr>Lat:  " + d.properties.lat + " - Long:" + d.properties.lon + "</tr>" +
+                        "<tr><strong> Year " + curr + " : " + d.properties[curr] + " </strong></tr></table>";
+                } else if (selectedItems.trend == 'trend') {
+                    var tau = Number(d.properties.tau);
+                    var sig = Number(d.properties.sig);
+                    var txt;
+                    if (isNaN(tau))
+                        txt = 'NA';
+                    else if (tau == 0)
+                        txt = 'No trend';
+                    else if (tau > 0) {
+                        if ((1 - sig) * 100 >= 95)
+                            txt = '+ve Sig';
+                        else
+                            txt = '+ve NonSig';
+                    }
+                    else if (tau < 0) {
+                        if ((1 - sig) * 100 >= 95)
+                            txt = '-ve Sig';
+                        else
+                            txt = '-ve NonSig';
+                    }
+
+                    html += "<table><tr>Lat:  " + d.properties.lat + " - Long:" + d.properties.lon + "</tr><br />" +
+                        "<tr><strong> Trend : " + Number(d.properties.trend).toFixed(1) + "/yr, " + txt + " </strong></tr></table>";
+
+                } else if (selectedItems.trend == 'delta') {
+                    //                    var rsdel = Number(d.properties.baseline) - Number(d.properties.delta);
+                    var rsdel = Number(d.properties.delta) - Number(d.properties.baseline);
+                    html += "<table><tr>Lat:  " + d.properties.lat + " - Long:" + d.properties.lon + "</tr>" +
+                        "<tr><strong> Delta : " + rsdel.toFixed(2) + " </strong></tr></table>";
+                }
+                tooltip.html(html);
+            } else {
+                $("#tooltip-container").hide();
+            }
+        }
+
+        //var rect = document.getElementById('divlegend').getBoundingClientRect();
+        //console.log(rect.top, rect.right, rect.bottom, rect.left);
+    </script>
+</head>
+
+<body>
+
+    <div style="text-align: center; width: 100%;">
+        <h2>Climate Extreme Indices - Time Series for NEX-GDDP Daily Downscaled Projections</h2>
+    </div>
+    <div class="left-fluid">
+        <ul>
+            <li><a class="active" href="#home">Home</a></li>
+            <li><a href="indexnex.html">Annual Time Series</a></li>
+            <li><a href="timeperiodComparison.html">Time Horizons Comparison</a></li>
+            <li><a href="IntermodelComparison.html">Intermodel Comparison</a></li>
+            <!--<li><a href="#about">About</a></li>-->
+        </ul>
+        <!--        <div class="form-group">
+             <a href="IntermodelComparison.html">Intermodel comparison</a>
+        </div>
+        <div class="form-group">
+             <a href="Intermodelwithtimecomparison.html">Intermodel with time comparison</a>
+        </div>-->
+    </div>
+    <div class="row-fluid">
+        <div id="header" style="margin-top: -21px;">
+            <h4 style="text-align: center;">&nbsp;</h4>
+        </div>
+
+        <div id="selection">
+            <div class="form-group" style="float: left;">
+                <label class="control-label">State</label>
+                <div>
+                    <select id="state_select">
+                        <option value="">Please Select...</option>
+                        <option value="35">Andaman&Nicobar Islands</option>
+                        <option value="28">Andhra Pradesh</option>
+                        <option value="12">Arunachal Pradesh</option>
+                        <option value="18">Assam</option>
+                        <option value="10">Bihar</option>
+                        <option value="04">Chandigarh</option>
+                        <option value="22">Chhattisgarh</option>
+                        <option value="26">Dadra&Nagar Haveli</option>
+                        <option value="25">Daman&Diu</option>
+                        <option value="30">Goa</option>
+                        <option value="24">Gujarat</option>
+                        <option value="06">Haryana</option>
+                        <option value="02">Himachal Pradesh</option>
+                        <option value="01">Jammu&Kashmir</option>
+                        <option value="20">Jharkhand</option>
+                        <option value="29">Karnataka</option>
+                        <option value="32">Kerala</option>
+                        <option value="31">Lakshadweep</option>
+                        <option value="23">Madhya Pradesh</option>
+                        <option value="27">Maharashtra</option>
+                        <option value="14">Manipur</option>
+                        <option value="17">Meghalaya</option>
+                        <option value="15">Mizoram</option>
+                        <option value="13">Nagaland</option>
+                        <option value="07">NCT of Delhi</option>
+                        <option value="21">Orissa</option>
+                        <option value="34">Puducherry</option>
+                        <option value="03">Punjab</option>
+                        <option value="08">Rajasthan</option>
+                        <option value="11">Sikkim</option>
+                        <option value="33">Tamil Nadu</option>
+                        <option value="36">Telangana</option>
+                        <option value="16">Tripura</option>
+                        <option value="09">Uttar Pradesh</option>
+                        <option value="05">Uttarakhand</option>
+                        <option value="19">West Bengal</option>
+
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="float: left; padding-left: 10px;">
+                <label class="control-label">
+                    Scenario</label>
+                <div>
+                    <select id="rcp_select">
+                        <option value="">Please Select...</option>
+                        <option value="rcp45">rcp45</option>
+                        <option value="rcp85">rcp85</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="float: left; padding-left: 10px;">
+                <label class="control-label">
+                    Model</label>
+                <div>
+                    <select id="model_select">
+                        <option value="">Please Select...</option>
+                        <option value="ACCESS1-0">ACCESS1-0</option>
+                        <option value="bcc-csm1-1">bcc-csm1-1</option>
+                        <option value="BNU-ESM">BNU-ESM</option>
+                        <option value="CanESM2">CanESM2</option>
+                        <option value="CCSM4">CCSM4</option>
+                        <option value="CESM1-BGC">CESM1-BGC</option>
+                        <option value="CNRM-CM5">CNRM-CM5</option>
+                        <option value="CSIRO-Mk3-6-0">CSIRO-Mk3-6-0</option>
+                        <option value="GFDL-CM3">GFDL-CM3</option>
+                        <option value="GFDL-ESM2G">GFDL-ESM2G</option>
+                        <option value="GFDL-ESM2M">GFDL-ESM2M</option>
+                        <option value="inmcm4">inmcm4</option>
+                        <option value="IPSL-CM5A-LR">IPSL-CM5A-LR</option>
+                        <option value="IPSL-CM5A-MR">IPSL-CM5A-MR</option>
+                        <option value="MIROC-ESM">MIROC-ESM</option>
+                        <option value="MIROC-ESM-CHEM">MIROC-ESM-CHEM</option>
+                        <option value="MIROC5">MIROC5</option>
+                        <option value="MPI-ESM-LR">MPI-ESM-LR</option>
+                        <option value="MPI-ESM-MR">MPI-ESM-MR</option>
+                        <option value="MRI-CGCM3">MRI-CGCM3</option>
+                        <option value="NorESM1-M">NorESM1-M</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="float: left; padding-left: 10px;">
+                <label class="control-label">
+                    Period</label>
+                <div>
+                    <select id="time_select">
+                        <option value="">Please Select...</option>
+                        <option value="short">Baseline (1981-2010)</option>
+                        <option value="near">Near term (2011-2040)</option>
+                        <option value="medium">Mid term (2041-2070)</option>
+                        <option value="long">Long term (2071-2100)</option>
+                    </select>
+                </div>
+            </div>
+            <div style="clear: both; padding-bottom: 10px;"></div>
+
+            <div class="form-group" style="float: left;">
+                <label class="control-label">
+                    Parameter</label>
+                <div>
+                    <select id="indicator_type_select">
+                        <option value="">Please Select...</option>
+                        <option value="precipitation">Precipitation</option>
+                        <option value="temperature">Temperature</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="float: left; padding-left: 10px;">
+                <label class="control-label">
+                    Indicator</label>
+                <div>
+                    <select id="indicator_name_select" style="width: 113px;">
+                        <option value="">Please select...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="float: left; padding-left: 10px;">
+                <label class="control-label">
+                    Value</label>
+                <div>
+                    <select id="trend_select">
+                        <option value="clim">Absolute</option>
+                        <option value="trend">Trend</option>
+                        <option value="delta">Delta</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="float: left; padding-left: 10px;">
+                <label class="control-label">&nbsp;</label>
+                <div>
+                    <button id="show">Show</button>
+                </div>
+            </div>
+            <div class="form-group" style="float: left; padding-left: 10px;">
+                <label class="control-label">&nbsp;</label>
+                <div>
+                    <button id="savemap">Save map</button>
+                    <label id="lbldelta" style="display: none;"><i>*Delta=Future-Baseline</i> </label>
+                </div>
+            </div>
+            <div class="form-group" style="float: right; padding-top: 10px;">
+                <div id="btnplay">
+                    <span id="clock">year</span>
+                    <button id="play">Play</button>
+                </div>
+            </div>
+        </div>
+        <div style="clear: both; padding-bottom: 10px;"></div>
+
+        <div id="wrapper" style="float: left;">
+            <!--<button id="play">Play</button><span id="clock">year</span>-->
+            <div id="map"></div>
+            <div id="tooltip-container"></div>
+        </div>
+
+        <div id="divlegend" class="legend2">
+        </div>
+
+        <img id="clockload" src="./clock.gif" style="display: none;" />
+        <div style="clear: both; padding-bottom: 10px;"></div>
+        <img src="Image/Trend_Leg_new.png" id="trdimg" class="trdlegend" width="200" height="100" />
+
+        <!--style="left:990px; border:none;"-->
+
+        <script>
+            var svg = d3.select("#map").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("style", 'margin-top:5px;');
+
+            //document.getElementById('divName').style.setProperty("top", "100px");
+
+            //$('.trdlegend').css({
+            //    position: 'absolute',
+            //    top:0,
+            //    left: 0
+            //});
+
+        </script>
+    </div>
+
+    <div style="clear: both; padding-bottom: 5px;"></div>
+    <div class="footer">
+        <div style="float: left;">
+            <a href='https://cds.nccs.nasa.gov/nex-gddp/'>NASA Earth Exchange Global Daily Downscaled Projections (NEX-GDDP)</a>
+        </div>
+        <div style="float: right;">
+            <a href="http://inrm.co.in">Processed and Analysed by INRM Consultants</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.7.5/leaflet.css" />
+	<link rel="stylesheet" href="//cdn.rawgit.com/Leaflet/Leaflet.label/master/dist/leaflet.label.css" />
+
+	<style>
+		body {
+			margin: 0;
+		}
+
+		html, body, #leaflet {
+			height: 100%;
+		}
+	</style>
+</head>
+<body>
+	<ul id="list"></ul>
+	<div id="leaflet"></div>
+	<script type="text/javascript" src="//cdn.leafletjs.com/leaflet-0.7.5/leaflet.js"></script>
+	<script type="text/javascript" src="//cdn.rawgit.com/Leaflet/Leaflet.label/master/dist/leaflet.label.js"></script>
+	<script type="text/javascript">
+		var map = new L.Map('leaflet', {
+			'center': [0, 0],
+			'zoom': 0,
+			'layers': [
+				L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+				})
+			]
+		});
+
+		var style = {
+			'default': {
+				'color': 'yellow'
+			},
+			'highlight': {
+				'color': 'red'
+			}
+		};
+
+		var group = new L.LayerGroup([
+			new L.Polygon([
+				[-50, -50], [50, -50], [50, -10], [-50, -10]
+			], { 'label': 'Polygon 1', 'popup': 'Polygon 1' }),
+			new L.Polygon([
+				[-50, 10], [50, 10], [50, 50], [-50, 50]
+			], { 'label': 'Polygon 2', 'popup': 'Polygon 2' })
+		]).addTo(map);
+
+		var highlight;
+
+		function setHighlight(layer) {
+			if (highlight) {
+				unsetHighlight(highlight);
+			}
+			layer.setStyle(style.highlight);
+			highlight = layer;
+		}
+
+		function unsetHighlight(layer) {
+			highlight = null;
+			layer.setStyle(style.default);
+		}
+
+		group.eachLayer(function (layer) {
+
+			layer.setStyle(style.default);
+
+			layer.bindLabel(layer.options.label);
+
+			layer.bindPopup(layer.options.popup);
+
+			layer.on('mouseover', function (e) {
+				setHighlight(layer);
+			});
+
+			layer.on('mouseout', function (e) {
+				unsetHighlight(layer);
+			});
+
+			var list = L.DomUtil.get('list'),
+				item = L.DomUtil.create('li', 'item', list),
+				link = L.DomUtil.create('a', 'link', item);
+
+			link.textContent = layer.options.label;
+			link.href = '#';
+
+			L.DomEvent.addListener(link, 'click', function (e) {
+				setHighlight(layer);
+			});
+
+		});
+	</script>
+</body>
+</html>

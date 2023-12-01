@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Leaflet Map</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet"
+          href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+</head>
+<body>
+    <div id="map" style="width: 960px; height: 500px"></div>
+
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    <script src="./js/jquery.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/topojson.v1.min.js"></script>
+    <script>
+
+        var coolPlaces = new L.LayerGroup();
+        //var coolPlaces = new L.FeatureGroup();
+        //L.marker([-41.29042, 174.78219])
+        //.bindPopup('Te Papa').addTo(coolPlaces),
+        //L.marker([-41.29437, 174.78405])
+        //    .bindPopup('Embassy Theatre').addTo(coolPlaces),
+        //L.marker([-41.2895, 174.77803])
+        //    .bindPopup('Michael Fowler Centre').addTo(coolPlaces),
+        //L.marker([-41.28313, 174.77736])
+        //    .bindPopup('Leuven Belgin Beer Cafe').addTo(coolPlaces),
+        //var basinurl = './json/test/cav.json'
+        //var geojsonLayer = new L.GeoJSON.AJAX(basinurl);
+        //geojsonLayer.addTo(coolPlaces);
+        //L.geoJson(basinurl).addTo(coolPlaces);
+
+        var wsurl = './json/watershed/cav.json'
+        var wsgeojson;
+        // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
+        $.getJSON(wsurl, function (data) {
+
+            //topoob = JSON.parse(basinreq.responseText)
+            var objname = Object.keys(data.objects)[0];
+            //neighbors = topojson.neighbors(data.objects[objname].geometries);
+            wslayer = topojson.feature(data, data.objects[objname])
+
+            wsgeojson = L.geoJson(wslayer).addTo(coolPlaces);
+        });
+
+        var coolPlaces2 = new L.LayerGroup();
+
+        var basinurl = './json/basin/cav.json'
+        var basingeojson;
+        // loading GeoJSON file - Here my html and usa_adm.geojson file resides in same folder
+        $.getJSON(basinurl, function (data) {
+
+            //topoob = JSON.parse(basinreq.responseText)
+            var objname = Object.keys(data.objects)[0];
+            //neighbors = topojson.neighbors(data.objects[objname].geometries);
+            basinlayer = topojson.feature(data, data.objects[objname])
+
+            //basingeojson = L.geoJson(basinlayer).addTo(coolPlaces);
+            basingeojson = L.geoJson(basinlayer, {
+                style: {
+                    color: "red",
+                    fillOpacity: 0,
+                    weight: 5
+                }
+            }).addTo(coolPlaces2);
+            ////console.log('neigh', neighbors)
+        });
+
+
+        var osmLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>',
+            thunLink = '<a href="http://thunderforest.com/">Thunderforest</a>';
+
+        var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            osmAttrib = '&copy; ' + osmLink + ' Contributors',
+            landUrl = 'http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png',
+            thunAttrib = '&copy; ' + osmLink + ' Contributors & ' + thunLink;
+
+        var osmMap = L.tileLayer(osmUrl, { attribution: osmAttrib }),
+            landMap = L.tileLayer(landUrl, { attribution: thunAttrib });
+
+        var map = L.map('map', {
+            layers: [osmMap] // only add one!
+        })
+            .setView([11.75, 77.43], 7);
+
+        var baseLayers = {
+            "OSM Mapnik": osmMap,
+            //"Landscape": landMap
+        };
+
+        var overlays = {
+            "Watershed": coolPlaces,
+            "Basin": coolPlaces2,
+        };
+        //console.log(coolPlaces);
+        //console.log(coolPlaces.layers.length);
+
+        L.control.layers(null, overlays, { collapsed: true }).addTo(map);
+        
+    </script>
+</body>
+</html>

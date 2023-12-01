@@ -1,0 +1,476 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link href="./favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!--<meta http-equiv='cache-control' content='no-cache' />
+    <meta http-equiv='expires' content='-1' />
+    <meta http-equiv='pragma' content='no-cache' />-->
+
+    <title>Flood Forecast for River Basins based on IMD Rainfall Forecast</title>
+
+    <script src="./js/jquery.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/d3.v4.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/d3-legend.v4.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/queue.v1.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/topojson.v1.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <script src="./js/colorbrewer.v1.min.js?6863520000" type="text/javascript" language="javascript"></script>
+    <!--<script src="./js/disablepage.js?6863520000"></script>-->
+
+    <link href="./css/screen.css" type="text/css" rel="stylesheet" rev="stylesheet" />
+    <link href="./css/screenUpdate.css" type="text/css" rel="stylesheet" rev="stylesheet" />
+    <link href="./css/reach.css" type="text/css" rel="stylesheet" rev="stylesheet" />
+
+    <style type="text/css">
+        .tab .nav-tabs {
+            border-bottom: 0 none;
+            width: 470px;
+        }
+
+            .tab .nav-tabs li a {
+                position: relative;
+                padding: 6px;
+                margin: 0px;
+                color: #804000;
+                font-size: 12px;
+                z-index: 1;
+            }
+
+                .tab .nav-tabs li a:hover {
+                    background: transparent;
+                    border: 1px solid transparent;
+                }
+
+                .tab .nav-tabs li a:before {
+                    content: "";
+                    width: 125%;
+                    height: 100%;
+                    position: absolute;
+                    *bottom: 2px;
+                    left: -2px;
+                    top: 2px;
+                    background: #D2B48C;
+                    border: 2px solid #d3d3d3;
+                    border-bottom: 0px none;
+                    border-bottom-left-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                    border-top-right-radius: 25px;
+                    border-top-left-radius: 5px;
+                    transform-origin: left center 0;
+                    z-index: -30;
+                }
+
+            .tab .nav-tabs li {
+                margin-right: 15px;
+                width: 80px;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+                .tab .nav-tabs li.active a:before {
+                    background: #804000;
+                }
+
+                .tab .nav-tabs li.active a,
+                .tab .nav-tabs li.active a:focus,
+                .tab .nav-tabs li.active a:hover {
+                    border: 1px solid transparent;
+                    background: transparent;
+                    color: #fff;
+                    font-weight: 300;
+                    z-index: 2;
+                }
+
+        .tab-content .tab-pane {
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border: 1px solid #af9a58;
+            padding: 1px;
+            background: #efeadd;
+            *line-height: 12px;
+            width: 470px;
+        }
+
+            .tab-content .tab-pane h4 {
+                margin-top: 0;
+                font-weight: 700;
+                font-size: 20px;
+            }
+
+        @media only screen and (max-width: 767px) {
+            .tab .nav-tabs li a {
+                padding: 15px 10px;
+                font-size: 14px;
+            }
+
+                .tab .nav-tabs li a:before {
+                    bottom: 6px;
+                }
+        }
+
+        @media only screen and (max-width: 499px) {
+            .tab .nav-tabs li {
+                width: 100%;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+
+                .tab .nav-tabs li a:before {
+                    bottom: 0;
+                    transform: none;
+                    border-bottom: 1px solid #408080;
+                }
+        }
+    </style>
+
+    <style type="text/css">
+        .allbasin {
+            fill: #d5f5e3;
+            stroke: gray;
+            stroke-width: 0.2px;
+        }
+
+        .cwcbasin {
+            *fill: transparent;
+            stroke: #999999;
+            stroke-width: 0.05px;
+            fill: #eee;
+        }
+
+        .gfsbasin {
+            *fill: transparent;
+            stroke: black;
+            stroke-width: 0.04px;
+            fill: #eee;
+        }
+
+        /*.x.axis path {
+            display: none;
+        }*/
+
+        /* this th and td for tooltip */
+        th {
+            border-bottom: 2px solid #ddd;
+            padding-left: 8px;
+            font-size: 8pt;
+            font-weight: bold;
+        }
+
+        td {
+            padding-left: 8px;
+            font-size: 8pt;
+            border-top: 1px solid #ddd;
+        }
+
+        .label {
+            font-size: 8px;
+        }
+        /*#divtool{
+            position:relative;
+            *z-index:10000;
+            border: 5px solid red;
+
+        }*/
+        .tbtoolTip {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            position: absolute;
+            display: none;
+            width: auto;
+            height: auto;
+            background: none repeat scroll 0 0 #FFFF99;
+            border: 0 none;
+            border-radius: 8px 8px 8px 8px;
+            *box-shadow: -3px 3px 15px #888888;
+            color: black;
+            font: 12px sans-serif;
+            padding: 5px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .wstooltip, .cwctooltip {
+            position: absolute;
+            display: none;
+            font-size: 12pt;
+            margin-top: -10px;
+            text-align: center;
+            width: auto;
+            height: auto;
+            z-index: 10;
+            right: 1px;
+            bottom: 1px;
+            padding: 3px;
+        }
+
+        #divlegend {
+            *border: 1px solid #999999;
+            position: absolute;
+            left: 7px;
+            bottom: 1px;
+            *width: 30px;
+            height: 145px;
+        }
+
+        #gfslabel, #wrflabel {
+            *border: 1px solid #999999;
+            position: absolute;
+            right: 1px;
+            top: 5px;
+            font-size: small;
+            *width: 30px;
+            *height: 135px;
+        }
+
+        #gfslabel {
+            margin-left: -2px;
+        }
+
+        #wrflabel {
+            top: 10px;
+        }
+
+        .noBorder {
+            border: none !important;
+        }
+
+        #divgfsmap, #divwrfmap {
+            width: 470px;
+            height: 500px;
+            background-color: #efeadd;
+            border: 1px solid #af9a58;
+            margin: 5px;
+            *transform: translate(100px, 100px);
+            *-webkit-transform: translate(100px, 100px);
+        }
+
+
+
+        #lbltitle {
+            left: 30px;
+            top: -9px;
+            *margin-left: 20px;
+            position: absolute;
+            background-color: white;
+            *border: 1px solid #af9a58;
+            font-size: 12px;
+            border-radius: 5px;
+            *padding: 1px 0 1px 0; /* top left bottom right*/
+        }
+
+    </style>
+    <style type="text/css">
+        .progress-meter .background {
+            fill: #ccc;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) inset;
+        }
+
+        .progress-meter .foreground {
+            fill: #9dcfff;
+        }
+
+        .progress-meter text {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body id="home">
+    <div id="wrapper">
+        <div id="header">
+            <div id="logo">
+                <div>
+                    &nbsp;
+                </div>
+                <span class="mainHeader">
+                    Flood Forecast for River Basins based on IMD Rainfall Forecast
+                </span>
+                <span id="tagline">
+                    &nbsp;
+                </span>
+            </div>
+            <div style="float: right; padding-right: 10px;">
+                <div>
+                    &nbsp;
+                </div>
+                <a href="" target="_blank">
+                    <img src="./Logo_60.gif" alt="Inrm Consultants Pvt Ltd" border="0" width="26" height="26" style="padding-left: 5px; padding-top: 3px;" />
+                </a>
+            </div>
+            <div class="clr">
+            </div>
+        </div>
+        <div id="nav-container">
+            <script>
+                function gotopage(obj) {
+                    if (basincode === null || typeof (basincode) === 'undefined' || obj === 'index.html') {
+                        window.location.href = "index.html";
+                    }
+                    else {
+                        window.location.href = obj + '?code=' + basincode + '&name=' + basinname;
+                    }
+                }
+            </script>
+            <ul id="nav" style="display: block;">
+                <li>
+                    <a href="#" onclick="gotopage('index.html')">Home</a>
+                </li>
+                <li>
+                    <a href="#" onclick="gotopage('imdgfs.html')">GFS Hydrology</a>
+                </li>
+                <li>
+                    <a href="#" onclick="gotopage('imdwrf.html')">WRF Hydrology</a>
+                </li>
+                <li class="current" title="Forecast rainfall comparison between GFS and WRF">
+                    <a href="#" onclick="gotopage('rainfall.html')" title="Forecast rainfall comparison between GFS and WRF">GFS/WRF Comparison</a>
+                </li>
+                <!--<li>
+                    <a href="cordexComparisons.html">Comparisons</a>
+                </li>-->
+            </ul>
+        </div>
+        <div id="content" style="margin: -20px 0 0 0;">
+            <div style="width: 100%;">
+                <div class="left-content" style="margin: 30px 0 0 0;width:480px;">
+                    <div class="map-container">
+                        <div id="divgfsmap">
+                        </div>
+                        <ul class="info">
+                            <li>
+                                <img src="./images/refresh32.png" alt="Reset" onclick="window.location.href = 'index.html';" style="margin-top: 5px; margin-left: 5px;" height="15" width="15" />
+                                <div class="dropdown">
+                                    <p>Click to RESET map layers.</p>
+                                </div>
+                            </li>
+                        </ul>
+                        <input type="button" id="play" style="position:absolute; left:10px;top:30px; width:20px;height:20px; background-color:transparent;outline:none;border:none; background-image:url('images/pause.png');background-position: center center;background-repeat: no-repeat;background-size: 20px 20px;" title="Play/Pause" />
+                        <div id="gfstooltip" class="wstooltip"></div>
+                        <div id="divlegend"></div>
+                        <label id="gfslabel"></label>
+                    </div>
+                </div>
+                <div class="right-content" style="margin: 30px 0 0 0;width:480px;">
+                    <div class="map-container">
+                        <div id="divwrfmap">
+                        </div>
+                        <div id="wrftooltip" class="wstooltip"></div>
+                        <label id="wrflabel"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clr"></div>
+    </div>
+    <style>
+        .loader {
+            width: 250px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            font-family: helvetica, arial, sans-serif;
+            text-transform: uppercase;
+            font-weight: 900;
+            color: #ce4233;
+            letter-spacing: 0.2em;
+            z-index: 1001;
+            *display: none;
+        }
+
+            .loader::before, .loader::after {
+                content: "";
+                display: block;
+                width: 15px;
+                height: 15px;
+                background: #ce4233;
+                position: absolute;
+                -webkit-animation: load .7s infinite alternate ease-in-out;
+                animation: load .7s infinite alternate ease-in-out;
+            }
+
+            .loader::before {
+                top: 0;
+            }
+
+            .loader::after {
+                bottom: 0;
+            }
+
+        @-webkit-keyframes load {
+            0% {
+                left: 0;
+                height: 30px;
+                width: 15px;
+            }
+
+            50% {
+                height: 8px;
+                width: 40px;
+            }
+
+            100% {
+                left: 235px;
+                height: 30px;
+                width: 15px;
+            }
+        }
+
+        @keyframes load {
+            0% {
+                left: 0;
+                height: 30px;
+                width: 15px;
+            }
+
+            50% {
+                height: 8px;
+                width: 40px;
+            }
+
+            100% {
+                left: 235px;
+                height: 30px;
+                width: 15px;
+            }
+        }
+
+        #loaderContainer {
+            background-color: rgba(0, 0, 0, 0.3);
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            left: 0px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+    <div id="loaderContainer" onclick="this.style.display = 'none';">
+        <div class="loader">Loading...</div>
+    </div>
+    <!--<img src="clock.gif" id="imgclock" style="display: none;" alt="Please wait while downloading" />-->
+    <div id="divalert" class="alert">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        <div id="divmsg"><strong>Alert!</strong></div>
+    </div>
+    <div class="prscentered">
+        <div class="prscontainer">
+            Processing wait ...
+        </div>
+    </div>
+    <div id="divpb"></div>
+    <script src="./js/rainfall.js?6863520000"></script>
+</body>
+</html>

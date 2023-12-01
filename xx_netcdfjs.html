@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src='./js/netcdfjs.js'></script>
+</head>
+<body>
+    
+    <script>
+
+        var urlpath = "./misc/2019-01-24_PCP.nc"
+        var reader;
+
+        var oReq = new XMLHttpRequest();
+        oReq.open("GET", urlpath, true);
+        oReq.responseType = "blob";
+
+        oReq.onload = function (oEvent) {
+            var t0 = performance.now();
+            var blob = oReq.response;
+            reader_url = new FileReader();
+
+            reader_url.onload = function (e) {
+                var t0 = performance.now();
+                reader = new netcdfjs(this.result);
+
+                var dataLatitude = reader.getDataVariable('latitude');
+                var dataLongitude = reader.getDataVariable('longitude');
+                var dataValues = reader.getDataVariable('APCP_surface');
+
+                var t1 = performance.now();
+
+                console.log(dataLatitude);
+                console.log(dataLongitude);
+                console.log(dataValues);
+
+                console.log("Decoding took " + (t1 - t0) + " milliseconds.")
+            }
+
+            var arrayBuffer = reader_url.readAsArrayBuffer(blob);
+
+        };
+        oReq.send(); //start process
+
+
+    </script>
+</body>
+
+</html>

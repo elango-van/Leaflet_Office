@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        button > * {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <button>
+        <svg>
+            <use xlink:href="#gear"></use>
+        </svg>
+    </button>
+    <script>
+
+        var width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        console.log(width);
+
+        //var button = document.querySelector("button");
+        //button.addEventListener("click", function (e) {
+        //    // button was clicked
+        //});
+
+        //document.documentElement.addEventListener("click", function (e) {
+        //    console.log(e.target.tagName);
+        //    if (e.target.tagName === "BUTTON") {
+        //        console.log(e.target);
+        //         //may not work, because might be svg or use
+        //    }
+        //});
+
+        //document.querySelector("button > svg").addEventListener("click", function (e) {
+        //    console.log(e.target);
+        //    e.stopPropagation();
+        //    e.preventDefault();
+        //});
+
+        //document.querySelector("button").addEventListener("click", function (e) {
+        //    // If the user clicked right on the SVG,
+        //    // this will never fire
+        //    console.log(e.target.tagName);
+        //});
+    </script>
+
+    <!-- given -->
+    <section class="image-list">
+        <div class="image">
+            <img src="./image-01.jpg">
+            <button class="remove">x</button>
+        </div>
+        <div class="image">
+            <img src="./image-02.png" />
+            <button class="remove">x</button>
+        </div>
+    </section>
+
+    <script>
+        function removeClickedImage(e) {
+            var el = e.target;
+            var imageContainer;
+            var list;
+            if (el.classList.contains("remove")) {
+                imageContainer = el.parentNode;
+                list = imageContainer.parentNode;
+                list.removeChild(imageContainer);
+            }
+        };
+
+        var imageList = document.querySelector(".image-list");
+        imageList.addEventListener("click", removeClickedImage);
+    </script>
+
+    <script>
+        // Multiple element listener
+        var elementsArray = document.querySelectorAll('whatever');
+
+        elementsArray.forEach(function (elem) {
+            elem.addEventListener("input", function () {
+                //this function does stuff
+            });
+        });
+
+        /////*********************
+        var theParent = document.querySelector("#theDude");
+        theParent.addEventListener("click", doSomething, false);
+
+        function doSomething(e) {
+            if (e.target !== e.currentTarget) {
+                var clickedItem = e.target.id;
+                alert("Hello " + clickedItem);
+            }
+            if (e.stopPropagation) e.stopPropagation();
+
+            //e.stopPropagation();
+        }
+
+        /////*********************
+        // Get an array of buttons from the page
+        var buttons = document.querySelectorAll(".btns");
+
+        // Loop through the resulting array
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener("click", function () {
+                console.log("Hello World");
+            });
+        }
+    </script>
+</body>
+</html>
